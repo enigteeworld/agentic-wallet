@@ -1,0 +1,40 @@
+# dependencies
+node_modules/
+**/node_modules/
+
+# builds
+dist/
+build/
+.out/
+.next/
+coverage/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# env / secrets
+.env
+.env.*.local
+
+# agent secrets / local state
+keystore/
+keystore/**
+
+# OS / editor
+.DS_Store
+.vscode/
+
+# dashboard build artifacts
+dashboard/dist/
+dashboard/node_modules/
+
+# anchor / rust / solana build artifacts
+onchain/**/target/
+onchain/**/.anchor/
+onchain/**/.solana/
+onchain/**/Cargo.lock
+**/.cargo/
