@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-declare_id!("11111111111111111111111111111111");
+declare_id!("5ND2gro8VfRE9xASu6zB1FPfKeH3Sf86hgkCkRmjFFBW");
 
 #[program]
 pub mod agent_registry {

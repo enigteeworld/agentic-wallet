@@ -7,12 +7,22 @@ type Status = {
   network: "devnet";
   rpcUrl: string;
   mint: { address: string; decimals: number } | null;
+
+  registry: {
+    programId: string | null;
+    enabled: boolean;
+  };
+
   agents: Array<{
     id: string;
     address: string;
     sol: number | null;
     ata: string | null;
     tokenRaw: string | null;
+
+    registryPda: string | null;
+    registryRegistered: boolean | null;
+
     errors?: string[];
   }>;
   warnings: string[];
@@ -20,6 +30,10 @@ type Status = {
 };
 
 const API = "http://localhost:8899/api/status";
+
+function explorerAddr(address: string) {
+  return `https://explorer.solana.com/address/${address}?cluster=devnet`;
+}
 
 export default function App() {
   const [data, setData] = useState<Status | null>(null);
@@ -51,7 +65,6 @@ export default function App() {
   }
 
   useEffect(() => {
-    // First load shows "Updating…" but keeps UI stable afterwards
     load({ silent: false });
     const t = setInterval(() => load({ silent: false }), 8000);
     return () => clearInterval(t);
@@ -89,10 +102,36 @@ export default function App() {
               Solana {data?.network ? data.network : "—"}
             </div>
             <div className="mt-1 break-all text-xs text-white/50">{data?.rpcUrl ?? "—"}</div>
+
+            <div className="mt-3 text-xs text-white/50">
+              Registry:{" "}
+              {data?.registry?.enabled ? (
+                <span className="text-emerald-300">ENABLED</span>
+              ) : (
+                <span className="text-white/40">OFF</span>
+              )}
+            </div>
+
+            {data?.registry?.programId ? (
+              <a
+                className="mt-1 block break-all text-xs text-white/40 hover:text-white/60"
+                href={explorerAddr(data.registry.programId)}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Program: {data.registry.programId}
+              </a>
+            ) : (
+              <div className="mt-1 break-all text-xs text-white/35">
+                (Set <code className="text-white/50">AGENT_REGISTRY_PROGRAM_ID</code> in .env)
+              </div>
+            )}
           </Card>
 
           <Card title="Mint (persisted)">
-            <div className="text-lg font-medium">{data?.mint ? shortAddr(data.mint.address) : "—"}</div>
+            <div className="text-lg font-medium">
+              {data?.mint ? shortAddr(data.mint.address) : "—"}
+            </div>
             <div className="mt-1 text-xs text-white/50">Decimals: {data?.mint?.decimals ?? "—"}</div>
             <div className="mt-2 break-all text-xs text-white/40">{data?.mint?.address ?? ""}</div>
           </Card>
@@ -152,16 +191,71 @@ export default function App() {
                     <th className="py-2">SOL</th>
                     <th className="py-2">Tokens</th>
                     <th className="py-2">ATA</th>
+                    <th className="py-2">Verified</th>
                   </tr>
                 </thead>
                 <tbody>
                   {data.agents.map((a) => (
                     <tr key={a.id} className="border-t border-white/10">
                       <td className="py-3 font-medium">{a.id}</td>
-                      <td className="py-3 text-white/70">{shortAddr(a.address)}</td>
+
+                      <td className="py-3 text-white/70">
+                        <a
+                          href={explorerAddr(a.address)}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="hover:text-white/90"
+                          title={a.address}
+                        >
+                          {shortAddr(a.address)}
+                        </a>
+                      </td>
+
                       <td className="py-3">{a.sol === null ? "—" : formatSol(a.sol)}</td>
+
                       <td className="py-3">{data.mint ? formatToken(a.tokenRaw, decimals) : "—"}</td>
-                      <td className="py-3 text-white/60">{a.ata ? shortAddr(a.ata) : "—"}</td>
+
+                      <td className="py-3 text-white/60" title={a.ata ?? ""}>
+                        {a.ata ? shortAddr(a.ata) : "—"}
+                      </td>
+
+                      <td className="py-3">
+                        {!data.registry.enabled ? (
+                          <span className="text-white/40">—</span>
+                        ) : a.registryRegistered === null ? (
+                          <span className="text-yellow-200/80">checking…</span>
+                        ) : a.registryRegistered ? (
+                          <div className="flex flex-col">
+                            <span className="text-emerald-300">✅ Registered</span>
+                            {a.registryPda ? (
+                              <a
+                                href={explorerAddr(a.registryPda)}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="mt-1 text-xs text-white/50 hover:text-white/70"
+                                title={a.registryPda}
+                              >
+                                PDA: {shortAddr(a.registryPda)}
+                              </a>
+                            ) : null}
+                          </div>
+                        ) : (
+                          <div className="flex flex-col">
+                            <span className="text-white/50">❌ Not registered</span>
+                            {a.registryPda ? (
+                              <a
+                                href={explorerAddr(a.registryPda)}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="mt-1 text-xs text-white/35 hover:text-white/55"
+                                title={a.registryPda}
+                              >
+                                PDA: {shortAddr(a.registryPda)}
+                              </a>
+                            ) : null}
+                          </div>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -172,7 +266,7 @@ export default function App() {
 
         <div className="mt-6 text-xs text-white/40">
           This dashboard is <span className="text-white/60">read-only</span> by design. Use the CLI
-          for actions (Step 3–6 + x402).
+          for actions (Step 3–6 + x402 + registry).
         </div>
       </div>
     </div>

@@ -12,12 +12,24 @@ type StatusResponse = {
   network: "devnet";
   rpcUrl: string;
   mint: { address: string; decimals: number } | null;
+
+  // ✅ New: registry metadata (if configured)
+  registry: {
+    programId: string | null;
+    enabled: boolean;
+  };
+
   agents: Array<{
     id: string;
     address: string;
     sol: number | null;
     ata: string | null;
     tokenRaw: string | null;
+
+    // ✅ New: registry proof per agent
+    registryPda: string | null;
+    registryRegistered: boolean | null;
+
     errors?: string[];
   }>;
   warnings: string[];
@@ -52,6 +64,25 @@ function ensureAgentKeypair(params: {
   return kp;
 }
 
+function getRegistryProgramId(): PublicKey | null {
+  const v = process.env.AGENT_REGISTRY_PROGRAM_ID;
+  if (!v) return null;
+
+  try {
+    return new PublicKey(v);
+  } catch {
+    return null;
+  }
+}
+
+function registryPda(programId: PublicKey, agent: PublicKey): PublicKey {
+  const [pda] = PublicKey.findProgramAddressSync(
+    [Buffer.from("agent"), agent.toBuffer()],
+    programId
+  );
+  return pda;
+}
+
 app.get("/health", (_req: Request, res: Response) => {
   res.json({ ok: true });
 });
@@ -73,7 +104,6 @@ app.get("/api/status", async (_req: Request, res: Response) => {
     try {
       await connection.getLatestBlockhash("confirmed");
     } catch (e: any) {
-      // If devnet is rate-limiting, we still return something useful
       warnings.push(`RPC health check failed (continuing): ${String(e?.message ?? e)}`);
     }
 
@@ -85,6 +115,11 @@ app.get("/api/status", async (_req: Request, res: Response) => {
     const mint = state.mint?.address
       ? { address: state.mint.address, decimals: state.mint.decimals }
       : null;
+
+    const registryProgramId = getRegistryProgramId();
+    if (process.env.AGENT_REGISTRY_PROGRAM_ID && !registryProgramId) {
+      warnings.push("AGENT_REGISTRY_PROGRAM_ID is set but invalid (not a PublicKey). Registry disabled.");
+    }
 
     const agents: StatusResponse["agents"] = [];
 
@@ -122,12 +157,32 @@ app.get("/api/status", async (_req: Request, res: Response) => {
         }
       }
 
+      // ✅ Registry status (safe)
+      let registryPdaAddr: string | null = null;
+      let registryRegistered: boolean | null = null;
+
+      if (registryProgramId) {
+        try {
+          const pda = registryPda(registryProgramId, kp.publicKey);
+          registryPdaAddr = pda.toBase58();
+
+          const info = await connection.getAccountInfo(pda, "confirmed");
+          registryRegistered = !!info;
+        } catch (e: any) {
+          registryPdaAddr = registryPdaAddr ?? null;
+          registryRegistered = null;
+          agentErrors.push(`registry check failed: ${String(e?.message ?? e)}`);
+        }
+      }
+
       agents.push({
         id,
         address,
         sol,
         ata,
         tokenRaw,
+        registryPda: registryPdaAddr,
+        registryRegistered,
         ...(agentErrors.length ? { errors: agentErrors } : {}),
       });
     }
@@ -137,6 +192,10 @@ app.get("/api/status", async (_req: Request, res: Response) => {
       network: "devnet",
       rpcUrl,
       mint,
+      registry: {
+        programId: registryProgramId ? registryProgramId.toBase58() : null,
+        enabled: !!registryProgramId,
+      },
       agents,
       warnings,
       updatedAt: new Date().toISOString(),
