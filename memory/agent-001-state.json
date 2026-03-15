@@ -1,0 +1,29 @@
+{
+  "agentId": "agent-001",
+  "version": "0.1.0",
+  "createdAt": "2026-03-15T11:24:07.952Z",
+  "updatedAt": "2026-03-15T12:37:24.329Z",
+  "counters": {
+    "cycleCount": 15,
+    "registryChecks": 8,
+    "registryRegistrations": 0,
+    "x402PaymentsAttempted": 5,
+    "x402PaymentsSucceeded": 3,
+    "jupiterSwapsAttempted": 1,
+    "jupiterSwapsSucceeded": 1,
+    "draftsCreated": 2,
+    "errors": 9
+  },
+  "daily": {
+    "date": "2026-03-15",
+    "trades": 1,
+    "payments": 3,
+    "drafts": 2
+  },
+  "lastCycleAt": "2026-03-15T12:37:20.809Z",
+  "lastBalanceCheckAt": "2026-03-15T12:37:21.541Z",
+  "lastRegistryCheckAt": "2026-03-15T12:37:21.778Z",
+  "lastJupiterSwapAt": "2026-03-15T11:51:36.409Z",
+  "lastX402PaymentAt": "2026-03-15T12:37:24.329Z",
+  "lastDraftAt": "2026-03-15T12:32:20.803Z"
+}

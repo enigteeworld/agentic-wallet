@@ -1,0 +1,33 @@
+{
+  "agentId": "agent-001",
+  "version": "0.1.0",
+  "mode": "safe",
+  "runtime": {
+    "loopIntervalSeconds": 300
+  },
+  "risk": {
+    "minSolReserve": 0.05,
+    "maxTradesPerDay": 3,
+    "maxSolPerTrade": 0.02,
+    "tradeCooldownMinutes": 60,
+    "maxPaymentsPerDay": 10
+  },
+  "registry": {
+    "enabled": true
+  },
+  "x402": {
+    "enabled": true,
+    "serverUrl": "http://localhost:8787"
+  },
+  "jupiter": {
+    "enabled": true,
+    "solPerTrade": 0.02,
+    "slippageBps": 100,
+    "cluster": "mainnet-beta",
+    "execute": false
+  },
+  "xDrafts": {
+    "enabled": true,
+    "maxDraftsPerDay": 5
+  }
+}

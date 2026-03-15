@@ -10,18 +10,17 @@ import { runX402Client } from "./addons/x402/client";
 
 import { WalletManager } from "./wallet/walletManager";
 import { isAgentRegistered, registerAgentOnChain } from "./registry/agentRegistry";
+import { runAgentRuntime } from "./agent/runtime";
+import { getAgentStatus, agentStatusFilesExist } from "./agent/status";
 
 const program = new Command();
 
 function resolveRpcUrl(override?: string): string {
-  // Prefer CLI override
   if (override) return override;
 
-  // Then .env RPC_URL
   const envRpc = process.env.RPC_URL;
   if (envRpc) return envRpc;
 
-  // If your project has a failover list elsewhere, keep this strict for now:
   throw new Error("Missing RPC URL. Provide --rpc <url> or set RPC_URL in .env");
 }
 
@@ -92,10 +91,6 @@ program
  * =========================
  * Agent Registry (On-chain)
  * =========================
- *
- * Commands:
- *   npm run dev -- registry:status   --agent agent-001
- *   npm run dev -- registry:register --agent agent-001 --agentId agent-001 --version 0.1.0
  */
 
 program
@@ -146,6 +141,60 @@ program
     console.log(`PDA:     ${res.registry.toBase58()}`);
     console.log(`Sig:     ${res.signature}`);
     console.log(`Explorer: https://explorer.solana.com/tx/${res.signature}?cluster=devnet`);
+  });
+
+/**
+ * =========================
+ * Always-On Agent Runtime
+ * =========================
+ */
+
+program
+  .command("agent:run")
+  .description("Run the always-on agent runtime loop")
+  .requiredOption("--agent <id>", "Agent keystore id (e.g. agent-001)")
+  .option("--live", "Force live mode (overrides config mode=safe)", false)
+  .action(async (opts) => {
+    const rpcUrl = resolveRpcUrl(program.opts().rpc as string | undefined);
+    await runAgentRuntime({
+      agentId: String(opts.agent),
+      rpcUrl,
+      live: Boolean(opts.live),
+    });
+  });
+
+program
+  .command("agent:status")
+  .description("Show status for the always-on agent")
+  .requiredOption("--agent <id>", "Agent keystore id (e.g. agent-001)")
+  .action(async (opts) => {
+    const rpcUrl = resolveRpcUrl(program.opts().rpc as string | undefined);
+    const status = await getAgentStatus({
+      agentId: String(opts.agent),
+      rpcUrl,
+    });
+
+    const files = agentStatusFilesExist(String(opts.agent));
+
+    console.log("\n— Agent Runtime Status");
+    console.log(`Agent:          ${status.agentId}`);
+    console.log(`Wallet:         ${status.wallet}`);
+    console.log(`RPC:            ${status.rpcUrl}`);
+    console.log(`Mode:           ${status.configMode}`);
+    console.log(`Version:        ${status.version}`);
+    console.log(`SOL Balance:    ${status.solBalance}`);
+    console.log(`Registered:     ${status.registered ? "✅ Yes" : "❌ No"}`);
+    console.log(`Registry PDA:   ${status.registryPda}`);
+    console.log(`Program ID:     ${status.programId}`);
+    console.log(`Config Path:    ${status.configPath}`);
+    console.log(`Log Path:       ${status.logPath} ${files.logExists ? "✅" : "❌"}`);
+    console.log(`Latest Draft:   ${status.latestDraftPath} ${files.latestDraftExists ? "✅" : "❌"}`);
+    console.log(`Cycles:         ${status.memory.counters.cycleCount}`);
+    console.log(`Trade Success:  ${status.memory.counters.jupiterSwapsSucceeded}`);
+    console.log(`Pay Success:    ${status.memory.counters.x402PaymentsSucceeded}`);
+    console.log(`Drafts Created: ${status.memory.counters.draftsCreated}`);
+    console.log(`Errors:         ${status.memory.counters.errors}`);
+    console.log(`Reputation:     ${status.reputation.score}`);
   });
 
 program.parseAsync(process.argv).catch((err) => {
