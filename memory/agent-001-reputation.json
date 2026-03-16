@@ -1,9 +1,9 @@
 {
   "agentId": "agent-001",
-  "updatedAt": "2026-03-15T12:37:24.331Z",
-  "score": 7,
-  "successfulTrades": 2,
-  "successfulPayments": 8,
-  "failedActions": 9,
-  "uptimeCycles": 7
+  "updatedAt": "2026-03-15T23:03:28.368Z",
+  "score": 145,
+  "successfulTrades": 32,
+  "successfulPayments": 49,
+  "failedActions": 17,
+  "uptimeCycles": 51
 }

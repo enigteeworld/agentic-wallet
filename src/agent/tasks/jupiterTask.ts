@@ -1,5 +1,6 @@
 import { exec as execCb } from "child_process";
 import { promisify } from "util";
+import { loadAgentConfig } from "../config";
 import {
   appendActionLog,
   createActionLog,
@@ -51,6 +52,7 @@ export async function runJupiterTask(params: {
 }): Promise<JupiterTaskResult> {
   const { agentId, version, solAmount, slippageBps, cluster, execute } = params;
 
+  const config = loadAgentConfig({ agentId });
   let memory = loadAgentMemory({ agentId, version });
 
   try {
@@ -93,7 +95,7 @@ export async function runJupiterTask(params: {
 
     const { stdout = "", stderr = "" } = await exec(cmdParts.join(" "), {
       cwd: process.cwd(),
-      timeout: 180_000,
+      timeout: 180000,
       maxBuffer: 2 * 1024 * 1024,
       env: process.env,
     });
@@ -126,6 +128,7 @@ export async function runJupiterTask(params: {
     appendDraftPost(
       createJupiterDraft({
         agentId,
+        config,
         solAmount,
         execute,
         signature,

@@ -38,6 +38,65 @@ import {
 import { runRegistryTask } from "./tasks/registryTask";
 import { runX402Task } from "./tasks/x402Task";
 import { runJupiterTask } from "./tasks/jupiterTask";
+import { postLatestDraft } from "./xPoster";
+
+const ansi = {
+  reset: "\x1b[0m",
+  bold: "\x1b[1m",
+  dim: "\x1b[2m",
+  red: "\x1b[31m",
+  green: "\x1b[32m",
+  yellow: "\x1b[33m",
+  blue: "\x1b[34m",
+  magenta: "\x1b[35m",
+  cyan: "\x1b[36m",
+  white: "\x1b[37m",
+  gray: "\x1b[90m",
+};
+
+function color(text: string, ...styles: string[]): string {
+  return `${styles.join("")}${text}${ansi.reset}`;
+}
+
+function line(char = "─", width = 72): string {
+  return char.repeat(width);
+}
+
+function banner(title: string): string {
+  return color(`┌${line("─", 70)}┐`, ansi.magenta) +
+    `\n` +
+    color(`│ ${title.padEnd(68, " ")} │`, ansi.magenta, ansi.bold) +
+    `\n` +
+    color(`└${line("─", 70)}┘`, ansi.magenta);
+}
+
+function section(text: string): string {
+  return color(text, ansi.cyan, ansi.bold);
+}
+
+function success(text: string): string {
+  return color(text, ansi.green, ansi.bold);
+}
+
+function warn(text: string): string {
+  return color(text, ansi.yellow, ansi.bold);
+}
+
+function errText(text: string): string {
+  return color(text, ansi.red, ansi.bold);
+}
+
+function subtle(text: string): string {
+  return color(text, ansi.gray);
+}
+
+function value(text: string): string {
+  return color(text, ansi.white);
+}
+
+function keyValue(label: string, val: string): string {
+  return `${subtle(label)} ${value(val)}`;
+}
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -75,7 +134,7 @@ async function readBalances(params: {
 
   const kp = walletManager.loadOrCreateEncryptedKeypairOrThrow(params.agentId);
   const solLamports = await connection.getBalance(kp.publicKey, "confirmed");
-  const sol = solLamports / 1_000_000_000;
+  const sol = solLamports / 1000000000;
 
   const state = stateStore.load();
   const mintAddress = state.mint?.address ?? null;
@@ -114,6 +173,27 @@ function saveReputationFromLogs(agentId: string): AgentReputation {
   return reputation;
 }
 
+async function maybeAutoPost(params: {
+  agentId: string;
+  enabled: boolean;
+  reason: string;
+}): Promise<void> {
+  if (!params.enabled) return;
+
+  const result = await postLatestDraft({ agentId: params.agentId });
+
+  if (result.ok) {
+    console.log(success(`Auto-post check complete (${params.reason})`));
+    console.log(keyValue("Dry run: ", result.dryRun ? "yes" : "no"));
+    console.log(keyValue("Posted:  ", result.posted ? "yes" : "no"));
+    if (result.tweetId) {
+      console.log(keyValue("Tweet ID:", result.tweetId));
+    }
+  } else {
+    console.log(errText(`Auto-post failed: ${result.error}`));
+  }
+}
+
 export async function runAgentRuntime(params: {
   agentId: string;
   rpcUrl: string;
@@ -141,16 +221,19 @@ export async function runAgentRuntime(params: {
   appendDraftPost(
     createBootDraft({
       agentId: params.agentId,
-      version: config.version,
+      config,
     })
   );
 
-  console.log(`\n🤖 Agent runtime started`);
-  console.log(`Agent:   ${params.agentId}`);
-  console.log(`Mode:    ${config.mode}`);
-  console.log(`Version: ${config.version}`);
-  console.log(`RPC:     ${params.rpcUrl}`);
-  console.log(`Loop:    every ${config.runtime.loopIntervalSeconds}s`);
+  console.log("");
+  console.log(banner("AGENT RUNTIME ONLINE"));
+  console.log(keyValue("Agent:   ", params.agentId));
+  console.log(keyValue("Public:  ", config.persona.publicName));
+  console.log(keyValue("Mode:    ", config.mode));
+  console.log(keyValue("Version: ", config.version));
+  console.log(keyValue("RPC:     ", params.rpcUrl));
+  console.log(keyValue("Loop:    ", `every ${config.runtime.loopIntervalSeconds}s`));
+  console.log(color(line("─", 72), ansi.gray));
 
   while (true) {
     let memory = loadAgentMemory({
@@ -170,12 +253,23 @@ export async function runAgentRuntime(params: {
       memory = markBalanceCheck(memory);
       saveAgentMemory(memory);
 
+      console.log("");
+      console.log(banner(`CYCLE ${memory.counters.cycleCount}`));
       console.log(
-        `\n[cycle ${memory.counters.cycleCount}] SOL=${balances.sol.toFixed(4)} TOKEN=${
-          balances.tokenUi ?? "—"
-        }`
+        keyValue(
+          "Balances:",
+          `SOL=${balances.sol.toFixed(4)} | TOKEN=${balances.tokenUi ?? "—"}`
+        )
       );
+      if (balances.mintAddress) {
+        console.log(keyValue("Mint:    ", balances.mintAddress));
+      }
+      if (balances.ata) {
+        console.log(keyValue("ATA:     ", balances.ata));
+      }
+      console.log("");
 
+      console.log(section("Registry check"));
       const registryResult = await runRegistryTask({
         rpcUrl: params.rpcUrl,
         agentId: params.agentId,
@@ -183,6 +277,29 @@ export async function runAgentRuntime(params: {
       });
 
       const registered = registryResult.ok ? registryResult.registered : false;
+
+      if (registryResult.ok) {
+        console.log(
+          `${success("Registry status:")} ${registered ? value("registered") : warn("not registered")}`
+        );
+        if (registryResult.registryPda) {
+          console.log(keyValue("Registry: ", registryResult.registryPda));
+        }
+      } else {
+        console.log(`${errText("Registry error:")} ${registryResult.error}`);
+      }
+
+      if (
+        registryResult.ok &&
+        !registryResult.alreadyRegistered &&
+        config.x.autoPost
+      ) {
+        await maybeAutoPost({
+          agentId: params.agentId,
+          enabled: true,
+          reason: "registry registration",
+        });
+      }
 
       memory = loadAgentMemory({
         agentId: params.agentId,
@@ -202,16 +319,40 @@ export async function runAgentRuntime(params: {
         preferDraft: true,
       });
 
-      console.log(`Decision: ${decision.action} — ${decision.reason}`);
+      console.log("");
+      console.log(section("Policy decision"));
+      console.log(`${subtle("Action:")} ${value(decision.action)}`);
+      console.log(`${subtle("Reason:")} ${value(decision.reason)}`);
+      console.log(color(line("─", 72), ansi.gray));
 
       if (decision.action === "x402_payment") {
-        await runX402Task({
+        const paymentResult = await runX402Task({
           agentId: params.agentId,
           version: config.version,
           serverUrl: config.x402.serverUrl,
         });
+
+        if (paymentResult.ok) {
+          console.log(success("x402 payment task completed"));
+          if (paymentResult.signature) {
+            console.log(keyValue("Signature:", paymentResult.signature));
+          }
+          if (paymentResult.explorerUrl) {
+            console.log(keyValue("Proof:    ", paymentResult.explorerUrl));
+          }
+
+          if (config.x.autoPost) {
+            await maybeAutoPost({
+              agentId: params.agentId,
+              enabled: true,
+              reason: "x402 payment",
+            });
+          }
+        } else {
+          console.log(errText(`x402 payment task failed: ${paymentResult.error}`));
+        }
       } else if (decision.action === "jupiter_swap") {
-        await runJupiterTask({
+        const swapResult = await runJupiterTask({
           agentId: params.agentId,
           version: config.version,
           solAmount: config.jupiter.solPerTrade,
@@ -219,6 +360,23 @@ export async function runAgentRuntime(params: {
           cluster: config.jupiter.cluster,
           execute: config.jupiter.execute && config.mode === "live",
         });
+
+        if (swapResult.ok) {
+          console.log(success("Jupiter task completed"));
+          if (swapResult.signature) {
+            console.log(keyValue("Signature:", swapResult.signature));
+          }
+
+          if (config.x.autoPost) {
+            await maybeAutoPost({
+              agentId: params.agentId,
+              enabled: true,
+              reason: "jupiter swap",
+            });
+          }
+        } else {
+          console.log(errText(`Jupiter task failed: ${swapResult.error}`));
+        }
       } else if (decision.action === "draft_post") {
         const recentEntries = readRecentActionLogs(params.agentId, 25);
         const currentReputation = loadAgentReputation(params.agentId);
@@ -247,6 +405,16 @@ export async function runAgentRuntime(params: {
             reason: "Created summary draft",
           })
         );
+
+        console.log(success("Summary draft created"));
+
+        if (config.x.autoPost) {
+          await maybeAutoPost({
+            agentId: params.agentId,
+            enabled: true,
+            reason: "summary draft",
+          });
+        }
       } else {
         appendActionLog(
           createActionLog({
@@ -256,6 +424,8 @@ export async function runAgentRuntime(params: {
             reason: decision.reason,
           })
         );
+
+        console.log(warn("No action executed this cycle"));
       }
 
       const reputation = saveReputationFromLogs(params.agentId);
@@ -274,6 +444,15 @@ export async function runAgentRuntime(params: {
           },
         })
       );
+
+      console.log("");
+      console.log(section("Cycle summary"));
+      console.log(keyValue("Reputation:", String(reputation.score)));
+      console.log(keyValue("Trades:    ", String(reputation.successfulTrades)));
+      console.log(keyValue("Payments:  ", String(reputation.successfulPayments)));
+      console.log(keyValue("Failures:  ", String(reputation.failedActions)));
+      console.log(color(line("─", 72), ansi.gray));
+      console.log(subtle(`Sleeping ${config.runtime.loopIntervalSeconds}s until next cycle...`));
     } catch (error: any) {
       memory = loadAgentMemory({
         agentId: params.agentId,
@@ -293,7 +472,10 @@ export async function runAgentRuntime(params: {
 
       saveReputationFromLogs(params.agentId);
 
-      console.error(`Runtime cycle error: ${String(error?.message ?? error)}`);
+      console.log("");
+      console.log(errText("Runtime cycle error"));
+      console.log(color(String(error?.message ?? error), ansi.red));
+      console.log(color(line("─", 72), ansi.gray));
     }
 
     await sleep(config.runtime.loopIntervalSeconds * 1000);

@@ -39,11 +39,33 @@ export function loadAgentMemory(params: {
   const raw = fs.readFileSync(filepath, "utf8");
   const parsed = JSON.parse(raw) as AgentMemory;
 
-  return rotateDailyIfNeeded({
+  const next: AgentMemory = {
     ...parsed,
     agentId: parsed.agentId ?? params.agentId,
     version: parsed.version ?? params.version,
-  });
+    counters: {
+      cycleCount: parsed.counters?.cycleCount ?? 0,
+      registryChecks: parsed.counters?.registryChecks ?? 0,
+      registryRegistrations: parsed.counters?.registryRegistrations ?? 0,
+      x402PaymentsAttempted: parsed.counters?.x402PaymentsAttempted ?? 0,
+      x402PaymentsSucceeded: parsed.counters?.x402PaymentsSucceeded ?? 0,
+      jupiterSwapsAttempted: parsed.counters?.jupiterSwapsAttempted ?? 0,
+      jupiterSwapsSucceeded: parsed.counters?.jupiterSwapsSucceeded ?? 0,
+      draftsCreated: parsed.counters?.draftsCreated ?? 0,
+      xPostsAttempted: parsed.counters?.xPostsAttempted ?? 0,
+      xPostsSucceeded: parsed.counters?.xPostsSucceeded ?? 0,
+      errors: parsed.counters?.errors ?? 0,
+    },
+    daily: {
+      date: parsed.daily?.date ?? todayUtcDateString(),
+      trades: parsed.daily?.trades ?? 0,
+      payments: parsed.daily?.payments ?? 0,
+      drafts: parsed.daily?.drafts ?? 0,
+      posts: parsed.daily?.posts ?? 0,
+    },
+  };
+
+  return rotateDailyIfNeeded(next);
 }
 
 export function saveAgentMemory(memory: AgentMemory): void {
@@ -70,6 +92,7 @@ export function rotateDailyIfNeeded(memory: AgentMemory): AgentMemory {
       trades: 0,
       payments: 0,
       drafts: 0,
+      posts: 0,
     },
   };
 }
@@ -193,6 +216,35 @@ export function markDraftCreated(memory: AgentMemory): AgentMemory {
     daily: {
       ...next.daily,
       drafts: next.daily.drafts + 1,
+    },
+  };
+}
+
+export function markXPostAttempt(memory: AgentMemory): AgentMemory {
+  const next = rotateDailyIfNeeded(memory);
+
+  return {
+    ...next,
+    counters: {
+      ...next.counters,
+      xPostsAttempted: next.counters.xPostsAttempted + 1,
+    },
+  };
+}
+
+export function markXPostSuccess(memory: AgentMemory): AgentMemory {
+  const next = rotateDailyIfNeeded(memory);
+
+  return {
+    ...next,
+    lastXPostAt: new Date().toISOString(),
+    counters: {
+      ...next.counters,
+      xPostsSucceeded: next.counters.xPostsSucceeded + 1,
+    },
+    daily: {
+      ...next.daily,
+      posts: next.daily.posts + 1,
     },
   };
 }

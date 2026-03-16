@@ -12,6 +12,7 @@ import { WalletManager } from "./wallet/walletManager";
 import { isAgentRegistered, registerAgentOnChain } from "./registry/agentRegistry";
 import { runAgentRuntime } from "./agent/runtime";
 import { getAgentStatus, agentStatusFilesExist } from "./agent/status";
+import { postLatestDraft } from "./agent/xPoster";
 
 const program = new Command();
 
@@ -193,8 +194,34 @@ program
     console.log(`Trade Success:  ${status.memory.counters.jupiterSwapsSucceeded}`);
     console.log(`Pay Success:    ${status.memory.counters.x402PaymentsSucceeded}`);
     console.log(`Drafts Created: ${status.memory.counters.draftsCreated}`);
+    console.log(`X Posts:        ${status.memory.counters.xPostsSucceeded}`);
     console.log(`Errors:         ${status.memory.counters.errors}`);
     console.log(`Reputation:     ${status.reputation.score}`);
+  });
+
+program
+  .command("agent:post-latest")
+  .description("Post the latest generated draft to X (safe mode supported)")
+  .requiredOption("--agent <id>", "Agent keystore id (e.g. agent-001)")
+  .action(async (opts) => {
+    const result = await postLatestDraft({
+      agentId: String(opts.agent),
+    });
+
+    if (!result.ok) {
+      console.error("\n❌ X post failed");
+      console.error(result.error);
+      process.exit(1);
+    }
+
+    console.log("\n✅ X post layer executed");
+    console.log(`Dry run: ${result.dryRun ? "yes" : "no"}`);
+    console.log(`Posted:  ${result.posted ? "yes" : "no"}`);
+    if (result.tweetId) {
+      console.log(`Tweet ID: ${result.tweetId}`);
+    }
+    console.log("\nText:\n");
+    console.log(result.text);
   });
 
 program.parseAsync(process.argv).catch((err) => {

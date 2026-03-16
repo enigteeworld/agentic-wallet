@@ -24,6 +24,7 @@ function resetDailyIfNeeded(memory: AgentMemory): AgentMemory {
       trades: 0,
       payments: 0,
       drafts: 0,
+      posts: 0,
     },
   };
 }

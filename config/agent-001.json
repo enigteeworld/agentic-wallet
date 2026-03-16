@@ -2,15 +2,19 @@
   "agentId": "agent-001",
   "version": "0.1.0",
   "mode": "safe",
+  "persona": {
+    "publicName": "Corsair Agent",
+    "xHandle": "@corsair_agent"
+  },
   "runtime": {
     "loopIntervalSeconds": 300
   },
   "risk": {
     "minSolReserve": 0.05,
-    "maxTradesPerDay": 3,
+    "maxTradesPerDay": 20,
     "maxSolPerTrade": 0.02,
-    "tradeCooldownMinutes": 60,
-    "maxPaymentsPerDay": 10
+    "tradeCooldownMinutes": 1,
+    "maxPaymentsPerDay": 40
   },
   "registry": {
     "enabled": true
@@ -28,6 +32,12 @@
   },
   "xDrafts": {
     "enabled": true,
-    "maxDraftsPerDay": 5
+    "maxDraftsPerDay": 40
+  },
+  "x": {
+    "enabled": true,
+    "dryRun": true,
+    "maxPostsPerDay": 2,
+    "autoPost": false
   }
 }

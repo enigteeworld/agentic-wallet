@@ -8,6 +8,7 @@ export type AgentActionType =
   | "x402_payment"
   | "jupiter_swap"
   | "draft_post"
+  | "x_post"
   | "summary"
   | "error"
   | "noop";
@@ -16,6 +17,10 @@ export type AgentConfig = {
   agentId: string;
   version: string;
   mode: AgentRuntimeMode;
+  persona: {
+    publicName: string;
+    xHandle?: string;
+  };
   runtime: {
     loopIntervalSeconds: number;
   };
@@ -44,6 +49,12 @@ export type AgentConfig = {
     enabled: boolean;
     maxDraftsPerDay: number;
   };
+  x: {
+    enabled: boolean;
+    dryRun: boolean;
+    maxPostsPerDay: number;
+    autoPost: boolean;
+  };
 };
 
 export type AgentMemory = {
@@ -58,6 +69,7 @@ export type AgentMemory = {
   lastX402PaymentAt?: string;
   lastJupiterSwapAt?: string;
   lastDraftAt?: string;
+  lastXPostAt?: string;
   counters: {
     cycleCount: number;
     registryChecks: number;
@@ -67,6 +79,8 @@ export type AgentMemory = {
     jupiterSwapsAttempted: number;
     jupiterSwapsSucceeded: number;
     draftsCreated: number;
+    xPostsAttempted: number;
+    xPostsSucceeded: number;
     errors: number;
   };
   daily: {
@@ -74,6 +88,7 @@ export type AgentMemory = {
     trades: number;
     payments: number;
     drafts: number;
+    posts: number;
   };
 };
 
@@ -142,6 +157,8 @@ export function createDefaultMemory(params: {
       jupiterSwapsAttempted: 0,
       jupiterSwapsSucceeded: 0,
       draftsCreated: 0,
+      xPostsAttempted: 0,
+      xPostsSucceeded: 0,
       errors: 0,
     },
     daily: {
@@ -149,6 +166,7 @@ export function createDefaultMemory(params: {
       trades: 0,
       payments: 0,
       drafts: 0,
+      posts: 0,
     },
   };
 }

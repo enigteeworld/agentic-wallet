@@ -31,6 +31,10 @@ function latestDraftPath(agentId: string): string {
   return path.join(draftsDir(), `${agentId}-latest.txt`);
 }
 
+function displayName(config: AgentConfig): string {
+  return config.persona.publicName || config.agentId;
+}
+
 export function appendDraftPost(post: AgentDraftPost): void {
   ensureDir(draftsDir());
 
@@ -41,72 +45,95 @@ export function appendDraftPost(post: AgentDraftPost): void {
 
 export function createBootDraft(params: {
   agentId: string;
-  version: string;
+  config: AgentConfig;
 }): AgentDraftPost {
+  const name = displayName(params.config);
+
   return {
     ts: new Date().toISOString(),
     agentId: params.agentId,
     kind: "boot",
     text:
-      `Boot complete.\n\n` +
-      `Agent: ${params.agentId}\n` +
-      `Version: ${params.version}\n` +
-      `Runtime is online and beginning scheduled checks.`,
+      `${name} is online.\n\n` +
+      `Mode: ${params.config.mode}\n` +
+      `Version: ${params.config.version}\n\n` +
+      `Autonomous checks have started.`,
   };
 }
 
 export function createRegistryDraft(params: {
   agentId: string;
+  config: AgentConfig;
   programId: string;
   registryPda: string;
 }): AgentDraftPost {
+  const name = displayName(params.config);
+
   return {
     ts: new Date().toISOString(),
     agentId: params.agentId,
     kind: "registry",
     text:
-      `Registered on-chain.\n\n` +
-      `Agent: ${params.agentId}\n` +
+      `${name} is now registered on-chain.\n\n` +
       `Program: ${params.programId}\n` +
-      `Registry PDA: ${params.registryPda}\n\n` +
-      `Identity is now publicly verifiable.`,
+      `PDA: ${params.registryPda}\n\n` +
+      `Identity is publicly verifiable.`,
   };
 }
 
 export function createX402PaymentDraft(params: {
   agentId: string;
+  config: AgentConfig;
   serverUrl: string;
+  amountSol?: number;
   signature?: string;
+  explorerUrl?: string;
 }): AgentDraftPost {
+  const name = displayName(params.config);
+  const amount = typeof params.amountSol === "number"
+    ? params.amountSol.toFixed(2)
+    : "0.01";
+
+  const proofLine = params.explorerUrl
+    ? `Proof: ${params.explorerUrl}\n\n`
+    : "";
+
   return {
     ts: new Date().toISOString(),
     agentId: params.agentId,
     kind: "x402_payment",
     text:
-      `Completed a 402-style payment cycle.\n\n` +
-      `Agent: ${params.agentId}\n` +
-      `Server: ${params.serverUrl}\n` +
-      (params.signature ? `Signature: ${params.signature}\n\n` : "\n") +
-      `Machines paying machines feels inevitable.`,
+      `${name} executed an on-chain payment.\n\n` +
+      `${amount} SOL sent.\n` +
+      `Status: verified\n\n` +
+      proofLine +
+      `Machines paying machines.`,
   };
 }
 
 export function createJupiterDraft(params: {
   agentId: string;
+  config: AgentConfig;
   solAmount: number;
   execute: boolean;
   signature?: string;
+  explorerUrl?: string;
 }): AgentDraftPost {
+  const name = displayName(params.config);
+  const status = params.execute ? "executed" : "simulated";
+  const proofLine = params.explorerUrl
+    ? `Proof: ${params.explorerUrl}\n\n`
+    : "";
+
   return {
     ts: new Date().toISOString(),
     agentId: params.agentId,
     kind: "jupiter_swap",
     text:
-      `${params.execute ? "Executed" : "Simulated"} a bounded Jupiter swap.\n\n` +
-      `Agent: ${params.agentId}\n` +
-      `Swap size: ${params.solAmount} SOL\n` +
-      (params.signature ? `Signature: ${params.signature}\n\n` : "\n") +
-      `Simulation-first execution remains the rule.`,
+      `${name} ${status} a Jupiter swap.\n\n` +
+      `Size: ${params.solAmount} SOL\n\n` +
+      proofLine +
+      `Bounded execution on Solana.`,
   };
 }
 
@@ -117,21 +144,18 @@ export function createSummaryDraft(params: {
   recentEntries: AgentActionLogEntry[];
 }): AgentDraftPost {
   const successfulActions = params.recentEntries.filter((x) => x.ok).length;
-  const failedActions = params.recentEntries.filter((x) => !x.ok).length;
+  const name = displayName(params.config);
 
   return {
     ts: new Date().toISOString(),
     agentId: params.agentId,
     kind: "summary",
     text:
-      `Agent summary.\n\n` +
-      `Agent: ${params.agentId}\n` +
-      `Mode: ${params.config.mode}\n` +
-      `Successful recent actions: ${successfulActions}\n` +
-      `Failed recent actions: ${failedActions}\n` +
-      `Reputation score: ${params.reputation.score}\n` +
-      `Successful trades: ${params.reputation.successfulTrades}\n` +
-      `Successful payments: ${params.reputation.successfulPayments}\n\n` +
+      `${name} update.\n\n` +
+      `Recent successes: ${successfulActions}\n` +
+      `Reputation: ${params.reputation.score}\n` +
+      `Trades: ${params.reputation.successfulTrades}\n` +
+      `Payments: ${params.reputation.successfulPayments}\n\n` +
       `Still operating within bounded risk controls.`,
   };
 }

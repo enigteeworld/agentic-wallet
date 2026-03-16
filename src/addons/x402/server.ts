@@ -45,8 +45,13 @@ async function verifyPaymentTx(params: {
     commitment: "confirmed",
   });
 
-  if (!tx) return { ok: false, reason: "Transaction not found (not confirmed yet?)" };
-  if (tx.meta?.err) return { ok: false, reason: "Transaction failed on-chain" };
+  if (!tx) {
+    return { ok: false, reason: "Transaction not found (not confirmed yet?)" };
+  }
+
+  if (tx.meta?.err) {
+    return { ok: false, reason: "Transaction failed on-chain" };
+  }
 
   const ixs = tx.transaction.message.instructions;
 
@@ -62,7 +67,10 @@ async function verifyPaymentTx(params: {
     }
   }
 
-  return { ok: false, reason: "No matching transfer found to recipient for required amount" };
+  return {
+    ok: false,
+    reason: "No matching transfer found to recipient for required amount",
+  };
 }
 
 app.get("/health", (_req: Request, res: Response) => {
@@ -88,10 +96,10 @@ app.get("/resource", async (req: Request, res: Response) => {
     // No payment proof -> 402 Payment Required
     if (!paymentSig) {
       return res.status(402).json({
-        code: "PAYMENT_REQUIRED",
-        network: "solana-devnet",
-        price: { sol: REQUIRED_SOL, lamports: minLamports },
         recipient: recipient.toBase58(),
+        priceSol: REQUIRED_SOL,
+        lamports: minLamports,
+        network: "solana-devnet",
         instruction: "Pay on-chain then retry with header x-payment-signature=<txSignature>",
       });
     }
@@ -106,6 +114,10 @@ app.get("/resource", async (req: Request, res: Response) => {
 
     if (!verdict.ok) {
       return res.status(402).json({
+        recipient: recipient.toBase58(),
+        priceSol: REQUIRED_SOL,
+        lamports: minLamports,
+        network: "solana-devnet",
         code: "PAYMENT_NOT_VERIFIED",
         reason: verdict.reason,
         retry: "Ensure your transaction is confirmed and pays the right recipient/amount.",

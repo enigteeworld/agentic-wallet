@@ -4,6 +4,7 @@ import {
   isAgentRegistered,
   registerAgentOnChain,
 } from "../../registry/agentRegistry";
+import { loadAgentConfig } from "../config";
 import {
   loadAgentMemory,
   markRegistryCheck,
@@ -40,6 +41,7 @@ export async function runRegistryTask(params: {
   const { rpcUrl, agentId, version } = params;
 
   try {
+    const config = loadAgentConfig({ agentId });
     const connection = new Connection(rpcUrl, "confirmed");
     const walletManager = new WalletManager(connection);
     const agentKeypair = walletManager.loadOrCreateEncryptedKeypairOrThrow(agentId);
@@ -109,6 +111,7 @@ export async function runRegistryTask(params: {
     appendDraftPost(
       createRegistryDraft({
         agentId,
+        config,
         programId: result.programId.toBase58(),
         registryPda: result.registry.toBase58(),
       })
