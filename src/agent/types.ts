@@ -9,9 +9,37 @@ export type AgentActionType =
   | "jupiter_swap"
   | "draft_post"
   | "x_post"
+  | "vault_cycle"
   | "summary"
   | "error"
   | "noop";
+
+export type VaultConfig = {
+  enabled: boolean;
+  vaultId: string;
+  source?: "local" | "ranger";
+  rangerVaultPubkey?: string;
+  managerAuthority?: string;
+  adminAuthority?: string;
+  listed?: boolean;
+};
+
+export type StrategyRuntimeConfig = {
+  mode: "vault";
+  strategyId: string;
+  baseAsset: string;
+  allowedAssets: string[];
+  minUsdcReservePct: number;
+  maxPositionPct: number;
+  maxTradePct: number;
+  maxConcurrentPositions: number;
+  minConfidence: number;
+  cooldownMinutes: number;
+  maxDailyTrades: number;
+  softDrawdownPct: number;
+  hardDrawdownPct: number;
+  maxSlippageBps: number;
+};
 
 export type AgentConfig = {
   agentId: string;
@@ -55,6 +83,8 @@ export type AgentConfig = {
     maxPostsPerDay: number;
     autoPost: boolean;
   };
+  vault?: VaultConfig;
+  strategy?: StrategyRuntimeConfig;
 };
 
 export type AgentMemory = {

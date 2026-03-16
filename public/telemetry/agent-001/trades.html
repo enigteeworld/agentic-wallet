@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>agent-001 Trade Logs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: Inter, Arial, sans-serif;
+      background: #0b0f17;
+      color: #e5e7eb;
+      margin: 0;
+      padding: 24px;
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .nav a {
+      color: #93c5fd;
+      margin-right: 16px;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .card {
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    h1, h2, h3 {
+      margin-top: 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px 8px;
+      border-bottom: 1px solid #1f2937;
+      vertical-align: top;
+    }
+    .ok { color: #34d399; }
+    .bad { color: #f87171; }
+    .muted { color: #9ca3af; }
+    code {
+      background: #0f172a;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="nav card">
+    <a href="/telemetry/agent-001/index.html">Dashboard</a>
+    <a href="/telemetry/agent-001/trades.html">Trade Logs</a>
+    <a href="/telemetry/agent-001/reputation.html">Reputation</a>
+    <a href="/telemetry/agent-001/telemetry.json">Raw JSON</a>
+  </div>
+    
+      <div class="card">
+        <h1>agent-001 Live Trade Logs</h1>
+        <div class="muted">Total trades: 0</div>
+      </div>
+
+      <div class="grid">
+        <div class="card"><h3>Buys</h3><div>0</div></div>
+        <div class="card"><h3>Sells</h3><div>0</div></div>
+        <div class="card"><h3>Realized PnL</h3><div>$0.00</div></div>
+        <div class="card"><h3>Latest Trade</h3><div>—</div></div>
+      </div>
+
+      <div class="card">
+        <table>
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Side</th>
+              <th>Pair</th>
+              <th>Input</th>
+              <th>Output</th>
+              <th>Slippage</th>
+              <th>Reason</th>
+              <th>Tx</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2>Open Positions</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Symbol</th>
+              <th>Quantity</th>
+              <th>Avg Entry</th>
+              <th>Current Price</th>
+              <th>Market Value</th>
+              <th>Unrealized PnL</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+          </tbody>
+        </table>
+      </div>
+    
+  </div>
+</body>
+</html>

@@ -9,7 +9,15 @@ import {
 export type AgentDraftPost = {
   ts: string;
   agentId: string;
-  kind: "boot" | "registry" | "x402_payment" | "jupiter_swap" | "summary" | "custom";
+  kind:
+    | "boot"
+    | "registry"
+    | "x402_payment"
+    | "jupiter_swap"
+    | "summary"
+    | "trade_execution"
+    | "performance"
+    | "custom";
   text: string;
 };
 
@@ -134,6 +142,59 @@ export function createJupiterDraft(params: {
       `Size: ${params.solAmount} SOL\n\n` +
       proofLine +
       `Bounded execution on Solana.`,
+  };
+}
+
+export function createTradeExecutionDraft(params: {
+  agentId: string;
+  title: string;
+  inputSymbol: string;
+  outputSymbol: string;
+  amount: number;
+  confidence?: number;
+  reason?: string;
+  proofUrl?: string;
+}): AgentDraftPost {
+  const confidenceText =
+    typeof params.confidence === "number"
+      ? `Confidence: ${params.confidence.toFixed(2)}\n`
+      : "";
+
+  const reasonText = params.reason ? `Reason: ${params.reason}\n` : "";
+  const proofText = params.proofUrl ? `Proof: ${params.proofUrl}\n` : "";
+
+  return {
+    ts: new Date().toISOString(),
+    agentId: params.agentId,
+    kind: "trade_execution",
+    text:
+      `${params.title}\n\n` +
+      `${params.inputSymbol} -> ${params.outputSymbol}\n` +
+      `Size: ${params.amount}\n` +
+      confidenceText +
+      reasonText +
+      proofText,
+  };
+}
+
+export function createPerformanceDraft(params: {
+  agentId: string;
+  headline: string;
+  navUsd: number;
+  realizedPnlUsd: number;
+  unrealizedPnlUsd: number;
+  reputationScore: number;
+}): AgentDraftPost {
+  return {
+    ts: new Date().toISOString(),
+    agentId: params.agentId,
+    kind: "performance",
+    text:
+      `${params.headline}\n\n` +
+      `NAV: $${params.navUsd.toFixed(2)}\n` +
+      `Realized PnL: $${params.realizedPnlUsd.toFixed(2)}\n` +
+      `Unrealized PnL: $${params.unrealizedPnlUsd.toFixed(2)}\n` +
+      `Reputation: ${params.reputationScore}`,
   };
 }
 

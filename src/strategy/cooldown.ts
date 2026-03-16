@@ -15,3 +15,5 @@ export class CooldownManager {
     this.store.set(pair, now.toISOString());
   }
 }
+
+export const cooldownManager = new CooldownManager();

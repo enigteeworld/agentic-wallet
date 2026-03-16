@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>agent-001 Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: Inter, Arial, sans-serif;
+      background: #0b0f17;
+      color: #e5e7eb;
+      margin: 0;
+      padding: 24px;
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .nav a {
+      color: #93c5fd;
+      margin-right: 16px;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .card {
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    h1, h2, h3 {
+      margin-top: 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px 8px;
+      border-bottom: 1px solid #1f2937;
+      vertical-align: top;
+    }
+    .ok { color: #34d399; }
+    .bad { color: #f87171; }
+    .muted { color: #9ca3af; }
+    code {
+      background: #0f172a;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="nav card">
+    <a href="/telemetry/agent-001/index.html">Dashboard</a>
+    <a href="/telemetry/agent-001/trades.html">Trade Logs</a>
+    <a href="/telemetry/agent-001/reputation.html">Reputation</a>
+    <a href="/telemetry/agent-001/telemetry.json">Raw JSON</a>
+  </div>
+    
+      <div class="card">
+        <h1>agent-001 Vault Performance Dashboard</h1>
+        <div class="muted">Generated at 2026-03-16T21:11:08.088Z</div>
+      </div>
+
+      <div class="grid">
+        <div class="card"><h3>NAV</h3><div>$0.00</div></div>
+        <div class="card"><h3>Realized PnL</h3><div>$0.00</div></div>
+        <div class="card"><h3>Unrealized PnL</h3><div>$0.00</div></div>
+        <div class="card"><h3>Drawdown</h3><div>0.00%</div></div>
+        <div class="card"><h3>Gross Exposure</h3><div>$0.00</div></div>
+        <div class="card"><h3>Cash %</h3><div>0.00%</div></div>
+      </div>
+
+      <div class="grid">
+        <div class="card"><h3>Reputation Score</h3><div>211</div></div>
+        <div class="card"><h3>Success Rate</h3><div>93.88%</div></div>
+        <div class="card"><h3>Successful Trades</h3><div>42</div></div>
+        <div class="card"><h3>Successful Payments</h3><div>53</div></div>
+        <div class="card"><h3>Failures</h3><div>20</div></div>
+        <div class="card"><h3>Uptime Cycles</h3><div>84</div></div>
+      </div>
+
+      <div class="card">
+        <h2>Vault</h2>
+        <table>
+          <tr><th>Vault Address</th><td><code>EUjtN36p8jwsdghVhK4S3Wp7AU3CYQrhLyww37ZBYi7o</code></td></tr>
+          <tr><th>Base Asset</th><td>USDC</td></tr>
+          <tr><th>LP Symbol</th><td>cUSDC</td></tr>
+          <tr><th>Strategy</th><td>CARV-1</td></tr>
+          <tr><th>Network</th><td>solana-mainnet</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2>Recent Activity</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Action</th>
+              <th>Status</th>
+              <th>Reason</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+              <tr>
+                <td>2026-03-16T21:08:59.968Z</td>
+                <td>summary</td>
+                <td class="ok">ok</td>
+                <td>Vault cycle summary written</td>
+              </tr>
+            
+              <tr>
+                <td>2026-03-16T21:08:59.955Z</td>
+                <td>vault_cycle</td>
+                <td class="ok">ok</td>
+                <td>Vault strategy cycle executed</td>
+              </tr>
+            
+              <tr>
+                <td>2026-03-16T21:03:57.344Z</td>
+                <td>summary</td>
+                <td class="ok">ok</td>
+                <td>Vault cycle summary written</td>
+              </tr>
+            
+              <tr>
+                <td>2026-03-16T21:03:57.333Z</td>
+                <td>vault_cycle</td>
+                <td class="ok">ok</td>
+                <td>Vault strategy cycle executed</td>
+              </tr>
+            
+              <tr>
+                <td>2026-03-16T21:03:55.260Z</td>
+                <td>boot</td>
+                <td class="ok">ok</td>
+                <td>Agent runtime booted</td>
+              </tr>
+            
+              <tr>
+                <td>2026-03-16T20:41:00.367Z</td>
+                <td>x_post</td>
+                <td class="ok">ok</td>
+                <td>X dry-run mode active; draft not posted</td>
+              </tr>
+            
+              <tr>
+                <td>2026-03-16T19:43:11.450Z</td>
+                <td>summary</td>
+                <td class="ok">ok</td>
+                <td>Vault cycle summary written</td>
+              </tr>
+            
+              <tr>
+                <td>2026-03-16T19:43:11.442Z</td>
+                <td>vault_cycle</td>
+                <td class="ok">ok</td>
+                <td>Vault strategy cycle executed</td>
+              </tr>
+            
+              <tr>
+                <td>2026-03-16T19:43:08.599Z</td>
+                <td>boot</td>
+                <td class="ok">ok</td>
+                <td>Agent runtime booted</td>
+              </tr>
+            
+              <tr>
+                <td>2026-03-16T19:41:20.516Z</td>
+                <td>error</td>
+                <td class="bad">failed</td>
+                <td>failed to get balance of account 8EZPckdFV8h96KUTuyC4uXrbpvEuFnQpDyNRvNtzET2d: TypeError: fetch failed</td>
+              </tr>
+            
+              <tr>
+                <td>2026-03-16T19:41:09.728Z</td>
+                <td>boot</td>
+                <td class="ok">ok</td>
+                <td>Agent runtime booted</td>
+              </tr>
+            
+              <tr>
+                <td>2026-03-16T19:30:46.356Z</td>
+                <td>summary</td>
+                <td class="ok">ok</td>
+                <td>Vault cycle summary written</td>
+              </tr>
+            
+              <tr>
+                <td>2026-03-16T19:30:46.348Z</td>
+                <td>vault_cycle</td>
+                <td class="ok">ok</td>
+                <td>Vault strategy cycle executed</td>
+              </tr>
+            
+              <tr>
+                <td>2026-03-16T19:30:43.519Z</td>
+                <td>boot</td>
+                <td class="ok">ok</td>
+                <td>Agent runtime booted</td>
+              </tr>
+            
+              <tr>
+                <td>2026-03-16T13:03:10.684Z</td>
+                <td>error</td>
+                <td class="bad">failed</td>
+                <td>failed to get balance of account 8EZPckdFV8h96KUTuyC4uXrbpvEuFnQpDyNRvNtzET2d: TypeError: fetch failed</td>
+              </tr>
+            
+              <tr>
+                <td>2026-03-16T12:58:00.096Z</td>
+                <td>summary</td>
+                <td class="ok">ok</td>
+                <td>Vault cycle summary written</td>
+              </tr>
+            
+              <tr>
+                <td>2026-03-16T12:58:00.031Z</td>
+                <td>vault_cycle</td>
+                <td class="ok">ok</td>
+                <td>Vault strategy cycle executed</td>
+              </tr>
+            
+              <tr>
+                <td>2026-03-16T12:52:57.231Z</td>
+                <td>summary</td>
+                <td class="ok">ok</td>
+                <td>Vault cycle summary written</td>
+              </tr>
+            
+              <tr>
+                <td>2026-03-16T12:52:57.224Z</td>
+                <td>vault_cycle</td>
+                <td class="ok">ok</td>
+                <td>Vault strategy cycle executed</td>
+              </tr>
+            
+              <tr>
+                <td>2026-03-16T12:52:55.397Z</td>
+                <td>boot</td>
+                <td class="ok">ok</td>
+                <td>Agent runtime booted</td>
+              </tr>
+            
+              <tr>
+                <td>2026-03-16T12:50:25.402Z</td>
+                <td>summary</td>
+                <td class="ok">ok</td>
+                <td>Vault cycle summary written</td>
+              </tr>
+            
+              <tr>
+                <td>2026-03-16T12:50:25.390Z</td>
+                <td>vault_cycle</td>
+                <td class="ok">ok</td>
+                <td>Vault strategy cycle executed</td>
+              </tr>
+            
+              <tr>
+                <td>2026-03-16T12:45:23.166Z</td>
+                <td>summary</td>
+                <td class="ok">ok</td>
+                <td>Vault cycle summary written</td>
+              </tr>
+            
+              <tr>
+                <td>2026-03-16T12:45:23.153Z</td>
+                <td>vault_cycle</td>
+                <td class="ok">ok</td>
+                <td>Vault strategy cycle executed</td>
+              </tr>
+            
+              <tr>
+                <td>2026-03-16T12:40:21.524Z</td>
+                <td>summary</td>
+                <td class="ok">ok</td>
+                <td>Vault cycle summary written</td>
+              </tr>
+            
+          </tbody>
+        </table>
+      </div>
+    
+  </div>
+</body>
+</html>

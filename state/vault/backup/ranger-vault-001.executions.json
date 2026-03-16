@@ -1,0 +1,50 @@
+[
+  {
+    "success": true,
+    "inputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "outputMint": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+    "inputAmount": 66.66666666666666,
+    "outputAmount": 393151042,
+    "effectivePriceUsd": 0,
+    "slippageBps": 50,
+    "feesUsd": 0,
+    "executedAt": "2026-03-16T11:08:28.463Z",
+    "raw": {
+      "cluster": "mainnet-beta",
+      "stdoutTail": "\n🪐 Jupiter Swap Add-on\nCluster: mainnet-beta\nRPC: https://api.mainnet-beta.solana.com\nAgent: agent-001\nTrade: EPjF...Dt1v -> JUPy...DvCN | amount=66.66666666666666 ui | slippage=50 bps\nInput Mint: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\nOutput Mint: JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN\nAmount Raw: 66666666\nMode: DRY-RUN (quote + build + simulate only)\nTip: add --execute ONLY if you intentionally want to trade real funds.\n\n\n✅ Agent pubkey: 8EZPckdFV8h96KUTuyC4uXrbpvEuFnQpDyNRvNtzET2d\n\n1) Getting quote...\n✅ Quote OK\nInput Mint: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\nOutput Mint: JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN\nIn Amount: 66666666\nOutput Amount: 393151042\nRoute Hops: 2\n\n2) Building swap transaction...\n✅ Received serialized swap transaction\nswapTransaction(base64) length: 1152\n\n3) Signing + simulating...\n✅ Simulation complete\nSimulation Error: \"AccountNotFound\"\n\nDRY-RUN finished ✅ (no on-chain swap sent)\n",
+      "stderrTail": ""
+    }
+  },
+  {
+    "success": true,
+    "inputMint": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+    "outputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "inputAmount": 393151042,
+    "outputAmount": 27039097836,
+    "effectivePriceUsd": 0,
+    "slippageBps": 50,
+    "feesUsd": 0,
+    "executedAt": "2026-03-16T11:15:06.423Z",
+    "raw": {
+      "cluster": "mainnet-beta",
+      "stdoutTail": "\n🪐 Jupiter Swap Add-on\nCluster: mainnet-beta\nRPC: https://api.mainnet-beta.solana.com\nAgent: agent-001\nTrade: JUPy...DvCN -> EPjF...Dt1v | amount=393151042 ui | slippage=50 bps\nInput Mint: JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN\nOutput Mint: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\nAmount Raw: 393151042000000\nMode: DRY-RUN (quote + build + simulate only)\nTip: add --execute ONLY if you intentionally want to trade real funds.\n\n\n✅ Agent pubkey: 8EZPckdFV8h96KUTuyC4uXrbpvEuFnQpDyNRvNtzET2d\n\n1) Getting quote...\n✅ Quote OK\nInput Mint: JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN\nOutput Mint: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\nIn Amount: 393151042000000\nOutput Amount: 27039097836\nRoute Hops: 5\n\n2) Building swap transaction...\n✅ Received serialized swap transaction\nswapTransaction(base64) length: 1272\n\n3) Signing + simulating...\n✅ Simulation complete\nSimulation Error: \"AccountNotFound\"\n\nDRY-RUN finished ✅ (no on-chain swap sent)\n",
+      "stderrTail": ""
+    }
+  },
+  {
+    "success": true,
+    "inputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "outputMint": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+    "inputAmount": 66.66666666666666,
+    "outputAmount": 393445406,
+    "effectivePriceUsd": 0,
+    "slippageBps": 50,
+    "feesUsd": 0,
+    "executedAt": "2026-03-16T11:47:18.193Z",
+    "raw": {
+      "cluster": "mainnet-beta",
+      "stdoutTail": "\n🪐 Jupiter Swap Add-on\nCluster: mainnet-beta\nRPC: https://api.mainnet-beta.solana.com\nAgent: agent-001\nTrade: EPjF...Dt1v -> JUPy...DvCN | amount=66.66666666666666 ui | slippage=50 bps\nInput Mint: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\nOutput Mint: JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN\nAmount Raw: 66666666\nMode: DRY-RUN (quote + build + simulate only)\nTip: add --execute ONLY if you intentionally want to trade real funds.\n\n\n✅ Agent pubkey: 8EZPckdFV8h96KUTuyC4uXrbpvEuFnQpDyNRvNtzET2d\n\n1) Getting quote...\n✅ Quote OK\nInput Mint: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\nOutput Mint: JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN\nIn Amount: 66666666\nOutput Amount: 393445406\nRoute Hops: 2\n\n2) Building swap transaction...\n✅ Received serialized swap transaction\nswapTransaction(base64) length: 1044\n\n3) Signing + simulating...\n✅ Simulation complete\nSimulation Error: \"AccountNotFound\"\n\nDRY-RUN finished ✅ (no on-chain swap sent)\n",
+      "stderrTail": ""
+    }
+  }
+]

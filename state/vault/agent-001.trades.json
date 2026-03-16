@@ -1,0 +1,17 @@
+[
+  {
+    "id": "trade-1773696267924-cha11a",
+    "timestamp": "2026-03-16T21:24:27.916Z",
+    "side": "BUY",
+    "inputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "outputMint": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+    "inputAmount": 0.000070833333,
+    "outputAmount": 0.0004171388,
+    "executionPriceUsd": 0.16980621677428662,
+    "feesUsd": 0,
+    "slippageBps": 50,
+    "txSignature": "simulated",
+    "strategyReason": "price=0.1697 | anchor=0.1629 | momentum=0.71 | riskPenalty=0.00 | exposurePct=0.00% | cashPct=100.00% | drawdownPct=0.00% | cooldownRemaining=0m",
+    "realizedPnlUsd": 0
+  }
+]

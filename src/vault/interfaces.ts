@@ -4,7 +4,18 @@ import type {
   VaultState,
 } from "../strategy/types";
 
+export type VaultIdentity = {
+  vaultId: string;
+  baseAssetMint: string;
+  source: "local" | "ranger";
+  rangerVaultPubkey?: string;
+  managerAuthority?: string;
+  adminAuthority?: string;
+  listed?: boolean;
+};
+
 export interface VaultAdapter {
+  getVaultIdentity(): Promise<VaultIdentity>;
   getVaultState(): Promise<VaultState>;
   getDeployableCapitalUsd(): Promise<number>;
   getBaseAssetMint(): Promise<string>;

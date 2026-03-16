@@ -1,38 +1,41 @@
 import "dotenv/config";
 import { Command } from "commander";
 import { Connection } from "@solana/web3.js";
-
 import { runStep3 } from "./demos/step3";
 import { runStep4 } from "./demos/step4";
 import { runStep5 } from "./demos/step5";
 import { runStep6 } from "./demos/step6";
 import { runX402Client } from "./addons/x402/client";
-
 import { WalletManager } from "./wallet/walletManager";
 import { isAgentRegistered, registerAgentOnChain } from "./registry/agentRegistry";
 import { runAgentRuntime } from "./agent/runtime";
 import { getAgentStatus, agentStatusFilesExist } from "./agent/status";
-import { postLatestDraft } from "./agent/xPoster";
+import { postLatestDraft, postTextToX } from "./agent/xPoster";
+import { appendDraftPost, createCustomDraft } from "./agent/xDrafts";
+import {
+  buildAgentTelemetry,
+  buildTelemetrySummaryText,
+  writeAgentTelemetryArtifacts,
+} from "./telemetry/report";
+import { serveTelemetry } from "./telemetry/server";
 
 const program = new Command();
 
 function resolveRpcUrl(override?: string): string {
   if (override) return override;
-
   const envRpc = process.env.RPC_URL;
   if (envRpc) return envRpc;
-
   throw new Error("Missing RPC URL. Provide --rpc <url> or set RPC_URL in .env");
 }
 
 program
   .name("agentic-wallet")
-  .description("Agentic Wallet demos (devnet)")
+  .description("Agentic Wallet demos and agent runtime")
   .option("--rpc <url>", "Override RPC URL (otherwise uses .env RPC_URL)");
 
 program
   .command("step3")
-  .description("Auto-sign SOL transfer agent-001 → agent-002")
+  .description("Auto-sign SOL transfer agent-001 -> agent-002")
   .option("--amount <sol>", "Amount of SOL to transfer", "0.05")
   .action(async (opts) => {
     const rpcUrl = program.opts().rpc as string | undefined;
@@ -41,7 +44,7 @@ program
 
 program
   .command("step4")
-  .description("Create SPL mint, mint tokens, transfer tokens agent-001 → agent-002")
+  .description("Create SPL mint, mint tokens, transfer tokens agent-001 -> agent-002")
   .action(async () => {
     const rpcUrl = program.opts().rpc as string | undefined;
     await runStep4({ rpcUrl });
@@ -88,12 +91,6 @@ program
     await runX402Client({ serverUrl: opts.server, agentId: opts.agent });
   });
 
-/**
- * =========================
- * Agent Registry (On-chain)
- * =========================
- */
-
 program
   .command("registry:status")
   .description("Check if an agent has an on-chain registry PDA")
@@ -101,18 +98,16 @@ program
   .action(async (opts) => {
     const rpcUrl = resolveRpcUrl(program.opts().rpc as string | undefined);
     const connection = new Connection(rpcUrl, "confirmed");
-
     const walletManager = new WalletManager(connection);
     const kp = walletManager.loadOrCreateEncryptedKeypairOrThrow(opts.agent);
-
     const out = await isAgentRegistered({ connection, agent: kp.publicKey });
 
-    console.log("\n— Agent Registry Status");
+    console.log("\n-- Agent Registry Status");
     console.log(`RPC:     ${rpcUrl}`);
     console.log(`Program: ${out.programId.toBase58()}`);
     console.log(`Agent:   ${kp.publicKey.toBase58()}`);
     console.log(`PDA:     ${out.registry.toBase58()}`);
-    console.log(`Status:  ${out.registered ? "✅ Registered" : "❌ Not registered"}`);
+    console.log(`Status:  ${out.registered ? "registered" : "not registered"}`);
   });
 
 program
@@ -124,7 +119,6 @@ program
   .action(async (opts) => {
     const rpcUrl = resolveRpcUrl(program.opts().rpc as string | undefined);
     const connection = new Connection(rpcUrl, "confirmed");
-
     const walletManager = new WalletManager(connection);
     const kp = walletManager.loadOrCreateEncryptedKeypairOrThrow(opts.agent);
 
@@ -135,20 +129,14 @@ program
       version: String(opts.version),
     });
 
-    console.log("\n✅ Registered on-chain");
-    console.log(`RPC:     ${rpcUrl}`);
-    console.log(`Program: ${res.programId.toBase58()}`);
-    console.log(`Agent:   ${kp.publicKey.toBase58()}`);
-    console.log(`PDA:     ${res.registry.toBase58()}`);
-    console.log(`Sig:     ${res.signature}`);
-    console.log(`Explorer: https://explorer.solana.com/tx/${res.signature}?cluster=devnet`);
+    console.log("\nRegistered on-chain");
+    console.log(`RPC:      ${rpcUrl}`);
+    console.log(`Program:  ${res.programId.toBase58()}`);
+    console.log(`Agent:    ${kp.publicKey.toBase58()}`);
+    console.log(`PDA:      ${res.registry.toBase58()}`);
+    console.log(`Sig:      ${res.signature}`);
+    console.log(`Explorer: https://explorer.solana.com/tx/${res.signature}`);
   });
-
-/**
- * =========================
- * Always-On Agent Runtime
- * =========================
- */
 
 program
   .command("agent:run")
@@ -174,22 +162,21 @@ program
       agentId: String(opts.agent),
       rpcUrl,
     });
-
     const files = agentStatusFilesExist(String(opts.agent));
 
-    console.log("\n— Agent Runtime Status");
+    console.log("\n-- Agent Runtime Status");
     console.log(`Agent:          ${status.agentId}`);
     console.log(`Wallet:         ${status.wallet}`);
     console.log(`RPC:            ${status.rpcUrl}`);
     console.log(`Mode:           ${status.configMode}`);
     console.log(`Version:        ${status.version}`);
     console.log(`SOL Balance:    ${status.solBalance}`);
-    console.log(`Registered:     ${status.registered ? "✅ Yes" : "❌ No"}`);
+    console.log(`Registered:     ${status.registered ? "yes" : "no"}`);
     console.log(`Registry PDA:   ${status.registryPda}`);
     console.log(`Program ID:     ${status.programId}`);
     console.log(`Config Path:    ${status.configPath}`);
-    console.log(`Log Path:       ${status.logPath} ${files.logExists ? "✅" : "❌"}`);
-    console.log(`Latest Draft:   ${status.latestDraftPath} ${files.latestDraftExists ? "✅" : "❌"}`);
+    console.log(`Log Path:       ${status.logPath} ${files.logExists ? "[ok]" : "[missing]"}`);
+    console.log(`Latest Draft:   ${status.latestDraftPath} ${files.latestDraftExists ? "[ok]" : "[missing]"}`);
     console.log(`Cycles:         ${status.memory.counters.cycleCount}`);
     console.log(`Trade Success:  ${status.memory.counters.jupiterSwapsSucceeded}`);
     console.log(`Pay Success:    ${status.memory.counters.x402PaymentsSucceeded}`);
@@ -209,12 +196,94 @@ program
     });
 
     if (!result.ok) {
-      console.error("\n❌ X post failed");
+      console.error("\nX post failed");
       console.error(result.error);
       process.exit(1);
     }
 
-    console.log("\n✅ X post layer executed");
+    console.log("\nX post layer executed");
+    console.log(`Dry run: ${result.dryRun ? "yes" : "no"}`);
+    console.log(`Posted:  ${result.posted ? "yes" : "no"}`);
+    if (result.tweetId) {
+      console.log(`Tweet ID: ${result.tweetId}`);
+    }
+    console.log("\nText:\n");
+    console.log(result.text);
+  });
+
+program
+  .command("telemetry:build")
+  .description("Build telemetry JSON + HTML dashboard artifacts for an agent")
+  .requiredOption("--agent <id>", "Agent keystore id (e.g. agent-001)")
+  .action(async (opts) => {
+    const agentId = String(opts.agent);
+    const telemetry = buildAgentTelemetry(agentId);
+    const out = writeAgentTelemetryArtifacts(telemetry);
+
+    console.log("\nTelemetry artifacts built");
+    console.log(`Agent:      ${agentId}`);
+    console.log(`Root dir:   ${out.rootDir}`);
+    console.log(`Dashboard:  ${out.dashboardPath}`);
+    console.log(`Trades:     ${out.tradesPath}`);
+    console.log(`Reputation: ${out.reputationPath}`);
+    console.log(`JSON:       ${out.jsonPath}`);
+  });
+
+program
+  .command("telemetry:serve")
+  .description("Serve generated telemetry pages locally")
+  .option("--port <n>", "Port to serve on", "8080")
+  .action(async (opts) => {
+    const port = Number(opts.port);
+    await serveTelemetry({ port });
+  });
+
+program
+  .command("agent:draft-report")
+  .description("Build a telemetry summary and save it as the latest X draft")
+  .requiredOption("--agent <id>", "Agent keystore id (e.g. agent-001)")
+  .action(async (opts) => {
+    const agentId = String(opts.agent);
+    const text = buildTelemetrySummaryText(agentId);
+
+    appendDraftPost(
+      createCustomDraft({
+        agentId,
+        text,
+      })
+    );
+
+    console.log("\nTelemetry summary drafted");
+    console.log(text);
+  });
+
+program
+  .command("agent:post-report")
+  .description("Build a telemetry summary and post it to X")
+  .requiredOption("--agent <id>", "Agent keystore id (e.g. agent-001)")
+  .action(async (opts) => {
+    const agentId = String(opts.agent);
+    const text = buildTelemetrySummaryText(agentId);
+
+    appendDraftPost(
+      createCustomDraft({
+        agentId,
+        text,
+      })
+    );
+
+    const result = await postTextToX({
+      agentId,
+      text,
+    });
+
+    if (!result.ok) {
+      console.error("\nReport post failed");
+      console.error(result.error);
+      process.exit(1);
+    }
+
+    console.log("\nReport post executed");
     console.log(`Dry run: ${result.dryRun ? "yes" : "no"}`);
     console.log(`Posted:  ${result.posted ? "yes" : "no"}`);
     if (result.tweetId) {

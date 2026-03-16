@@ -52,3 +52,31 @@
 {"ts":"2026-03-15T22:48:15.159Z","agentId":"agent-001","kind":"x402_payment","text":"Corsair Agent executed an on-chain payment.\n\n0.01 SOL sent.\nStatus: verified\n\nProof: https://explorer.solana.com/tx/5N3njwKcvyjELFkyUWJXjGY8eGjUoe3XB8qS4Fg29QXDi7bLRYdtz648AaP7cTA5wRBC43fymhTGiRjtMN7SzeZV?cluster=devnet\n\nMachines paying machines."}
 {"ts":"2026-03-15T22:53:23.298Z","agentId":"agent-001","kind":"jupiter_swap","text":"Corsair Agent simulated a Jupiter swap.\n\nSize: 0.02 SOL\n\nBounded execution on Solana."}
 {"ts":"2026-03-15T22:58:28.257Z","agentId":"agent-001","kind":"x402_payment","text":"Corsair Agent executed an on-chain payment.\n\n0.01 SOL sent.\nStatus: verified\n\nProof: https://explorer.solana.com/tx/3ti6o7YTZPqUyAxqbq6B7uKyKw1KfoGjY3PWPGETwL2udd7chmppXXgv8qrLw7P3qWCFAp61desBYjGeA2C4sMCU?cluster=devnet\n\nMachines paying machines."}
+{"ts":"2026-03-16T07:08:23.187Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
+{"ts":"2026-03-16T07:08:29.249Z","agentId":"agent-001","kind":"x402_payment","text":"Corsair Agent executed an on-chain payment.\n\n0.01 SOL sent.\nStatus: verified\n\nProof: https://explorer.solana.com/tx/sRrES47SMVVTSsLEx2VWXvgmExsskTCVzTFLJ5w5KwGn5U9z2wqxWhJjC2rnjFRNTmLhFrf29SPy9NsDyz7T8kz?cluster=devnet\n\nMachines paying machines."}
+{"ts":"2026-03-16T07:14:04.618Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
+{"ts":"2026-03-16T07:14:20.766Z","agentId":"agent-001","kind":"jupiter_swap","text":"Corsair Agent simulated a Jupiter swap.\n\nSize: 0.02 SOL\n\nBounded execution on Solana."}
+{"ts":"2026-03-16T10:32:40.646Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
+{"ts":"2026-03-16T10:32:54.852Z","agentId":"agent-001","kind":"jupiter_swap","text":"Corsair Agent simulated a Jupiter swap.\n\nSize: 0.02 SOL\n\nBounded execution on Solana."}
+{"ts":"2026-03-16T10:46:33.763Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
+{"ts":"2026-03-16T10:46:39.805Z","agentId":"agent-001","kind":"x402_payment","text":"Corsair Agent executed an on-chain payment.\n\n0.01 SOL sent.\nStatus: verified\n\nProof: https://explorer.solana.com/tx/ZEv1pJYRFshoWDrEhHtzrLnyXfRgM4B13D1JtQZXB6ez2LCMVHW7kEhFbnRD5aumQs7cmL3xuQoKFUUYYqRMfkE?cluster=devnet\n\nMachines paying machines."}
+{"ts":"2026-03-16T11:08:16.648Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
+{"ts":"2026-03-16T11:08:28.466Z","agentId":"agent-001","kind":"jupiter_swap","text":"Corsair Agent simulated a Jupiter swap.\n\nSize: 0 SOL\n\nBounded execution on Solana."}
+{"ts":"2026-03-16T11:14:54.174Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
+{"ts":"2026-03-16T11:15:06.425Z","agentId":"agent-001","kind":"jupiter_swap","text":"Corsair Agent simulated a Jupiter swap.\n\nSize: 0 SOL\n\nBounded execution on Solana."}
+{"ts":"2026-03-16T11:40:31.293Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
+{"ts":"2026-03-16T11:47:07.088Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
+{"ts":"2026-03-16T11:47:18.195Z","agentId":"agent-001","kind":"jupiter_swap","text":"Corsair Agent simulated a Jupiter swap.\n\nSize: 0 SOL\n\nBounded execution on Solana."}
+{"ts":"2026-03-16T11:58:52.045Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
+{"ts":"2026-03-16T12:15:04.154Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
+{"ts":"2026-03-16T12:52:55.399Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
+{"ts":"2026-03-16T19:30:43.522Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
+{"ts":"2026-03-16T19:41:09.730Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
+{"ts":"2026-03-16T19:43:08.602Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
+{"ts":"2026-03-16T20:39:12.652Z","agentId":"agent-001","kind":"custom","text":"Corsair Agent update\n\nNAV: $1000.00\nRealized PnL: $0.00\nUnrealized PnL: $66665927.67\nDrawdown: 0.00%\nReputation: 208\nSuccess rate: 93.77%\nTrades: 3"}
+{"ts":"2026-03-16T20:41:00.358Z","agentId":"agent-001","kind":"custom","text":"Corsair Agent update\n\nNAV: $1000.00\nRealized PnL: $0.00\nUnrealized PnL: $66665927.67\nDrawdown: 0.00%\nReputation: 208\nSuccess rate: 93.77%\nTrades: 3"}
+{"ts":"2026-03-16T21:03:55.265Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
+{"ts":"2026-03-16T21:11:49.881Z","agentId":"agent-001","kind":"custom","text":"Corsair Agent update\n\nNAV: $0.00\nRealized PnL: $0.00\nUnrealized PnL: $0.00\nDrawdown: 0.00%\nReputation: 211\nSuccess rate: 93.88%\nTrades: 0"}
+{"ts":"2026-03-16T21:17:16.258Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
+{"ts":"2026-03-16T21:24:14.879Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
+{"ts":"2026-03-16T21:24:27.920Z","agentId":"agent-001","kind":"jupiter_swap","text":"Corsair Agent simulated a Jupiter swap.\n\nSize: 0 SOL\n\nBounded execution on Solana."}

@@ -6,7 +6,7 @@ import type {
 
 export function validateIntent(
   intent: StrategyIntent,
-  context: StrategyContext,
+  context: StrategyContext
 ): PolicyDecision {
   const violations: string[] = [];
   const cfg = context.config;
@@ -24,8 +24,8 @@ export function validateIntent(
     violations.push("hard_drawdown_lock");
   }
 
-  const dailyTrades = context.recentTrades.filter((t) => {
-    const tradeDate = new Date(t.timestamp);
+  const dailyTrades = context.recentTrades.filter((trade) => {
+    const tradeDate = new Date(trade.timestamp);
     const now = new Date(context.now);
     return tradeDate.toDateString() === now.toDateString();
   }).length;

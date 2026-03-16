@@ -5,6 +5,7 @@ import {
   type AgentReputation,
   createDefaultReputation,
 } from "./types";
+import { readActionLogs } from "./actionLogger";
 
 function ensureDir(dirpath: string) {
   if (!fs.existsSync(dirpath)) {
@@ -108,6 +109,44 @@ export function recomputeReputationFromLogs(params: {
   }
 
   return reputation;
+}
+
+export function refreshAgentReputationFromDisk(agentId: string): AgentReputation {
+  const entries = readActionLogs(agentId);
+  const reputation = recomputeReputationFromLogs({
+    agentId,
+    entries,
+  });
+  saveAgentReputation(reputation);
+  return reputation;
+}
+
+export function buildReputationSnapshot(agentId: string): {
+  reputation: AgentReputation;
+  successRatePct: number;
+  totalActions: number;
+  okActions: number;
+  failedActions: number;
+} {
+  const entries = readActionLogs(agentId);
+  const reputation = recomputeReputationFromLogs({
+    agentId,
+    entries,
+  });
+
+  const totalActions = entries.length;
+  const okActions = entries.filter((entry) => entry.ok).length;
+  const failedActions = entries.filter((entry) => !entry.ok).length;
+  const successRatePct =
+    totalActions > 0 ? (okActions / totalActions) * 100 : 100;
+
+  return {
+    reputation,
+    successRatePct,
+    totalActions,
+    okActions,
+    failedActions,
+  };
 }
 
 export function getAgentReputationPath(agentId: string): string {

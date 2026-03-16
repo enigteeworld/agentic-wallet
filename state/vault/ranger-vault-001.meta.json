@@ -1,0 +1,17 @@
+{
+  "vaultAddress": "EUjtN36p8jwsdghVhK4S3Wp7AU3CYQrhLyww37ZBYi7o",
+  "manager": "8EZPckdFV8h96KUTuyC4uXrbpvEuFnQpDyNRvNtzET2d",
+  "admin": "49y7u19MZveazbup6DbbH5QX7EQfFrmur4Kf6LczU4BK",
+  "baseAsset": "USDC",
+  "lpSymbol": "cUSDC",
+  "protocol": "ranger",
+  "strategy": "CARV-1",
+  "network": "solana-mainnet",
+  "source": "ranger",
+  "rangerVaultPubkey": "EUjtN36p8jwsdghVhK4S3Wp7AU3CYQrhLyww37ZBYi7o",
+  "managerAuthority": "8EZPckdFV8h96KUTuyC4uXrbpvEuFnQpDyNRvNtzET2d",
+  "adminAuthority": "49y7u19MZveazbup6DbbH5QX7EQfFrmur4Kf6LczU4BK",
+  "baseAssetMint": "USDC",
+  "listed": false,
+  "updatedAt": "2026-03-16T21:39:32.716Z"
+}

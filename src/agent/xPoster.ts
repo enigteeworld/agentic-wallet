@@ -43,7 +43,6 @@ function normalizeDraftText(text: string): string {
 }
 
 function ensureTweetLength(text: string): void {
-  // Conservative limit for normal posts.
   if (text.length > 280) {
     throw new Error(
       `Draft is too long for a single X post (${text.length} chars > 280).`
@@ -110,8 +109,10 @@ export type PostLatestDraftResult =
       error: string;
     };
 
-export async function postLatestDraft(params: {
+async function postPreparedText(params: {
   agentId: string;
+  text: string;
+  source: "latest_draft" | "direct_text";
 }): Promise<PostLatestDraftResult> {
   const config = loadAgentConfig({ agentId: params.agentId });
   let memory = loadAgentMemory({
@@ -124,16 +125,10 @@ export async function postLatestDraft(params: {
       return { ok: false, error: "X posting is disabled in config" };
     }
 
-    const draftPath = getAgentLatestDraftPath(params.agentId);
-    if (!fs.existsSync(draftPath)) {
-      return { ok: false, error: `No latest draft found at ${draftPath}` };
-    }
-
-    const rawText = fs.readFileSync(draftPath, "utf8");
-    const text = normalizeDraftText(rawText);
+    const text = normalizeDraftText(params.text);
 
     if (!text) {
-      return { ok: false, error: "Latest draft file is empty" };
+      return { ok: false, error: "Draft text is empty" };
     }
 
     ensureTweetLength(text);
@@ -149,7 +144,7 @@ export async function postLatestDraft(params: {
           ok: true,
           reason: "X dry-run mode active; draft not posted",
           details: {
-            draftPath,
+            source: params.source,
             text,
           },
         })
@@ -174,9 +169,9 @@ export async function postLatestDraft(params: {
         agentId: params.agentId,
         action: "x_post",
         ok: true,
-        reason: "Posted latest draft to X",
+        reason: "Posted text to X",
         details: {
-          draftPath,
+          source: params.source,
           tweetId: tweet.data.id,
           text,
         },
@@ -202,6 +197,9 @@ export async function postLatestDraft(params: {
         action: "x_post",
         ok: false,
         reason: formatted,
+        details: {
+          source: params.source,
+        },
       })
     );
 
@@ -210,4 +208,33 @@ export async function postLatestDraft(params: {
       error: formatted,
     };
   }
+}
+
+export async function postTextToX(params: {
+  agentId: string;
+  text: string;
+}): Promise<PostLatestDraftResult> {
+  return postPreparedText({
+    agentId: params.agentId,
+    text: params.text,
+    source: "direct_text",
+  });
+}
+
+export async function postLatestDraft(params: {
+  agentId: string;
+}): Promise<PostLatestDraftResult> {
+  const draftPath = getAgentLatestDraftPath(params.agentId);
+
+  if (!fs.existsSync(draftPath)) {
+    return { ok: false, error: `No latest draft found at ${draftPath}` };
+  }
+
+  const rawText = fs.readFileSync(draftPath, "utf8");
+
+  return postPreparedText({
+    agentId: params.agentId,
+    text: rawText,
+    source: "latest_draft",
+  });
 }

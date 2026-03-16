@@ -3,10 +3,25 @@ import { Connection, PublicKey } from "@solana/web3.js";
 import { WalletManager } from "../wallet/walletManager";
 import { SplTokenService } from "../token/splTokenService";
 import { StateStore } from "../state/stateStore";
+import { executeStrategyIntent } from "../strategy/execution/executor";
+import { fetchVaultPrices } from "../strategy/market/prices";
+import { generateIntent } from "../strategy/engine";
+import { validateIntent } from "../strategy/risk";
+import {
+  type BalanceSnapshot,
+  type PositionRecord,
+  type StrategyConfig,
+  type StrategyContext,
+  type TradeRecord,
+} from "../strategy/types";
+import { RangerVaultAdapter } from "../vault/adapter";
 import { loadAgentConfig } from "./config";
 import {
   type AgentActionLogEntry,
+  type AgentConfig,
   type AgentReputation,
+  type StrategyRuntimeConfig,
+  type VaultConfig,
 } from "./types";
 import {
   decideNextAction,
@@ -37,6 +52,10 @@ import {
 } from "./reputation";
 import { runRegistryTask } from "./tasks/registryTask";
 import { runX402Task } from "./tasks/x402Task";
+import {
+  updateAccountingFromExecution,
+  loadAccountingState,
+} from "./tasks/accounting";
 import { runJupiterTask } from "./tasks/jupiterTask";
 import { postLatestDraft } from "./xPoster";
 
@@ -52,6 +71,29 @@ const ansi = {
   cyan: "\x1b[36m",
   white: "\x1b[37m",
   gray: "\x1b[90m",
+};
+
+type VaultRuntimeResolvedConfig = {
+  enabled: boolean;
+  vaultId: string;
+  source: "local" | "ranger";
+  rangerVaultPubkey?: string;
+  managerAuthority?: string;
+  adminAuthority?: string;
+  listed: boolean;
+  strategyId: string;
+  baseAsset: string;
+  allowedAssets: string[];
+  minUsdcReservePct: number;
+  maxPositionPct: number;
+  maxTradePct: number;
+  maxConcurrentPositions: number;
+  minConfidence: number;
+  cooldownMinutes: number;
+  maxDailyTrades: number;
+  softDrawdownPct: number;
+  hardDrawdownPct: number;
+  maxSlippageBps: number;
 };
 
 function color(text: string, ...styles: string[]): string {
@@ -114,7 +156,91 @@ function readRecentActionLogs(agentId: string, limit = 50): AgentActionLogEntry[
 
   return lines
     .slice(-limit)
-    .map((line) => JSON.parse(line) as AgentActionLogEntry);
+    .map((logLine) => JSON.parse(logLine) as AgentActionLogEntry);
+}
+
+function resolveVaultRuntimeConfig(config: AgentConfig): VaultRuntimeResolvedConfig {
+  const vault: VaultConfig | undefined = config.vault;
+  const strategy: StrategyRuntimeConfig | undefined = config.strategy;
+
+  const enabled =
+    vault?.enabled === true ||
+    strategy?.mode === "vault";
+
+  return {
+    enabled,
+    vaultId: vault?.vaultId ?? "ranger-vault-001",
+    source: vault?.source ?? "local",
+    rangerVaultPubkey: vault?.rangerVaultPubkey,
+    managerAuthority: vault?.managerAuthority,
+    adminAuthority: vault?.adminAuthority,
+    listed: vault?.listed ?? false,
+    strategyId: strategy?.strategyId ?? "carv-1",
+    baseAsset: strategy?.baseAsset ?? "USDC",
+    allowedAssets: strategy?.allowedAssets ?? ["SOL", "JUP"],
+    minUsdcReservePct: strategy?.minUsdcReservePct ?? 0.4,
+    maxPositionPct: strategy?.maxPositionPct ?? 0.25,
+    maxTradePct: strategy?.maxTradePct ?? 0.1,
+    maxConcurrentPositions: strategy?.maxConcurrentPositions ?? 2,
+    minConfidence: strategy?.minConfidence ?? 0.65,
+    cooldownMinutes: strategy?.cooldownMinutes ?? 360,
+    maxDailyTrades: strategy?.maxDailyTrades ?? 4,
+    softDrawdownPct: strategy?.softDrawdownPct ?? 0.05,
+    hardDrawdownPct: strategy?.hardDrawdownPct ?? 0.08,
+    maxSlippageBps: strategy?.maxSlippageBps ?? 50,
+  };
+}
+
+function toStrategyConfig(
+  resolved: VaultRuntimeResolvedConfig
+): StrategyConfig {
+  return {
+    mode: "vault",
+    strategyId: resolved.strategyId,
+    vaultId: resolved.vaultId,
+    baseAssetMint: resolved.baseAsset,
+    allowedAssets: resolved.allowedAssets,
+    minUsdcReservePct: resolved.minUsdcReservePct,
+    maxPositionPct: resolved.maxPositionPct,
+    maxTradePct: resolved.maxTradePct,
+    maxConcurrentPositions: resolved.maxConcurrentPositions,
+    minConfidence: resolved.minConfidence,
+    cooldownMinutes: resolved.cooldownMinutes,
+    maxDailyTrades: resolved.maxDailyTrades,
+    softDrawdownPct: resolved.softDrawdownPct,
+    hardDrawdownPct: resolved.hardDrawdownPct,
+    maxSlippageBps: resolved.maxSlippageBps,
+  };
+}
+
+function buildStrategyBalances(params: {
+  balances: {
+    sol: number;
+    mintAddress: string | null;
+    ata: string | null;
+    tokenRaw: string | null;
+    tokenUi: number | null;
+  };
+}): BalanceSnapshot[] {
+  const result: BalanceSnapshot[] = [
+    {
+      mint: "SOL",
+      symbol: "SOL",
+      amount: params.balances.sol,
+      valueUsd: 0,
+    },
+  ];
+
+  if (params.balances.tokenUi !== null && params.balances.tokenUi !== undefined) {
+    result.push({
+      mint: params.balances.mintAddress ?? "TOKEN",
+      symbol: "TOKEN",
+      amount: params.balances.tokenUi,
+      valueUsd: 0,
+    });
+  }
+
+  return result;
 }
 
 async function readBalances(params: {
@@ -194,6 +320,217 @@ async function maybeAutoPost(params: {
   }
 }
 
+async function runVaultCycle(params: {
+  agentId: string;
+  rpcUrl: string;
+  config: AgentConfig;
+  balances: {
+    sol: number;
+    mintAddress: string | null;
+    ata: string | null;
+    tokenRaw: string | null;
+    tokenUi: number | null;
+  };
+  cycleCount: number;
+}): Promise<void> {
+  const vaultConfig = resolveVaultRuntimeConfig(params.config);
+  const strategyConfig = toStrategyConfig(vaultConfig);
+
+  const vaultAdapter = new RangerVaultAdapter({
+    agentId: params.agentId,
+    vaultId: vaultConfig.vaultId,
+    baseAssetMint: vaultConfig.baseAsset,
+    minReservePct: vaultConfig.minUsdcReservePct,
+    source: vaultConfig.source,
+    rangerVaultPubkey: vaultConfig.rangerVaultPubkey,
+    managerAuthority: vaultConfig.managerAuthority,
+    adminAuthority: vaultConfig.adminAuthority,
+    listed: vaultConfig.listed,
+    rpcUrl: params.rpcUrl,
+  });
+
+  const vaultIdentity = await vaultAdapter.getVaultIdentity();
+  const vaultState = await vaultAdapter.getVaultState();
+  const accountingState = loadAccountingState(params.agentId);
+
+  const strategyBalances = buildStrategyBalances({
+    balances: params.balances,
+  });
+
+  const prices = await fetchVaultPrices([
+    vaultConfig.baseAsset,
+    ...vaultConfig.allowedAssets,
+  ]);
+
+  const recentTrades: TradeRecord[] = accountingState.trades;
+  const openPositions: PositionRecord[] = accountingState.positions;
+
+  const context: StrategyContext = {
+    agentId: params.agentId,
+    vault: vaultState,
+    balances: strategyBalances,
+    prices,
+    recentTrades,
+    openPositions,
+    now: new Date().toISOString(),
+    config: strategyConfig,
+  };
+
+  const intent = await generateIntent(context);
+  const policyDecision = validateIntent(intent, context);
+
+  console.log(section("Vault identity"));
+  console.log(keyValue("Source:    ", vaultIdentity.source));
+  console.log(keyValue("Vault ID:  ", vaultIdentity.vaultId));
+  console.log(keyValue("Base:      ", vaultIdentity.baseAssetMint));
+  console.log(keyValue("Listed:    ", vaultIdentity.listed ? "yes" : "no"));
+  if (vaultIdentity.rangerVaultPubkey) {
+    console.log(keyValue("Ranger PK: ", vaultIdentity.rangerVaultPubkey));
+  }
+  if (vaultIdentity.managerAuthority) {
+    console.log(keyValue("Manager:   ", vaultIdentity.managerAuthority));
+  }
+  if (vaultIdentity.adminAuthority) {
+    console.log(keyValue("Admin:     ", vaultIdentity.adminAuthority));
+  }
+  console.log("");
+
+  console.log(section("Vault strategy"));
+  console.log(keyValue("Strategy: ", vaultConfig.strategyId));
+  console.log(keyValue("Vault ID: ", vaultConfig.vaultId));
+  console.log(keyValue("Base:     ", vaultConfig.baseAsset));
+  console.log(keyValue("Universe: ", vaultConfig.allowedAssets.join(", ")));
+  console.log(keyValue("Reserve:  ", `${(vaultConfig.minUsdcReservePct * 100).toFixed(0)}%`));
+  console.log(keyValue("Max pos:  ", `${(vaultConfig.maxPositionPct * 100).toFixed(0)}%`));
+  console.log(keyValue("Max trade:", `${(vaultConfig.maxTradePct * 100).toFixed(0)}%`));
+  console.log(keyValue("Cooldown: ", `${vaultConfig.cooldownMinutes}m`));
+  console.log(keyValue("Max/day:  ", String(vaultConfig.maxDailyTrades)));
+  console.log(keyValue("Soft DD:  ", `${(vaultConfig.softDrawdownPct * 100).toFixed(1)}%`));
+  console.log(keyValue("Hard DD:  ", `${(vaultConfig.hardDrawdownPct * 100).toFixed(1)}%`));
+  console.log(keyValue("Slippage: ", `${vaultConfig.maxSlippageBps} bps`));
+  console.log("");
+
+  console.log(section("Vault state"));
+  console.log(keyValue("NAV USD:      ", String(vaultState.totalValueUsd)));
+  console.log(keyValue("Available USD:", String(vaultState.availableCapitalUsd)));
+  console.log(keyValue("Drawdown:     ", `${(vaultState.drawdownPct * 100).toFixed(2)}%`));
+  console.log(keyValue("Positions:    ", String(openPositions.length)));
+  console.log(keyValue("Recent trades:", String(recentTrades.length)));
+  console.log(keyValue("Updated:      ", vaultState.lastSyncAt));
+  console.log("");
+
+  console.log(section("Market snapshot"));
+  console.log(keyValue("USDC: ", String(prices.USDC ?? 1)));
+  console.log(keyValue("SOL:  ", prices.SOL !== undefined ? String(prices.SOL) : "—"));
+  console.log(keyValue("JUP:  ", prices.JUP !== undefined ? String(prices.JUP) : "—"));
+  console.log("");
+
+  console.log(section("Strategy decision"));
+  console.log(keyValue("Action:    ", intent.action));
+  console.log(keyValue("Reason:    ", intent.reason));
+  console.log(keyValue("Confidence:", intent.confidence.toFixed(2)));
+  console.log(
+    keyValue(
+      "Notional:  ",
+      intent.targetNotionalUsd !== undefined
+        ? String(intent.targetNotionalUsd)
+        : "—"
+    )
+  );
+  console.log(keyValue("Approved:  ", policyDecision.approved ? "yes" : "no"));
+  if (policyDecision.violations?.length) {
+    console.log(keyValue("Violations:", policyDecision.violations.join(", ")));
+  }
+  console.log("");
+
+  appendActionLog(
+    createActionLog({
+      agentId: params.agentId,
+      action: "vault_cycle",
+      ok: true,
+      reason: "Vault strategy cycle executed",
+      details: {
+        rpcUrl: params.rpcUrl,
+        cycleCount: params.cycleCount,
+        vaultIdentity,
+        strategyId: vaultConfig.strategyId,
+        vaultId: vaultConfig.vaultId,
+        baseAsset: vaultConfig.baseAsset,
+        allowedAssets: vaultConfig.allowedAssets,
+        balances: {
+          sol: params.balances.sol,
+          mintAddress: params.balances.mintAddress,
+          ata: params.balances.ata,
+          tokenRaw: params.balances.tokenRaw,
+          tokenUi: params.balances.tokenUi,
+        },
+        vaultState,
+        strategyContext: {
+          balances: strategyBalances,
+          prices,
+          recentTradesCount: recentTrades.length,
+          openPositionsCount: openPositions.length,
+        },
+        intent,
+        policyDecision,
+      },
+    })
+  );
+
+  if (intent.action === "HOLD") {
+    console.log(warn("Vault strategy is holding"));
+    return;
+  }
+
+  if (!policyDecision.approved) {
+    console.log(warn("Vault intent rejected by policy"));
+    return;
+  }
+
+  const execution = await executeStrategyIntent({
+    agentId: params.agentId,
+    version: params.config.version,
+    intent,
+    context,
+    cluster: params.config.jupiter.cluster,
+    execute: params.config.jupiter.execute && params.config.mode === "live",
+    maxSlippageBps: vaultConfig.maxSlippageBps,
+  });
+
+  if (!execution.ok) {
+    console.log(errText(`Vault execution failed: ${execution.error}`));
+    return;
+  }
+
+  const accounting = updateAccountingFromExecution({
+    agentId: params.agentId,
+    execution: execution.executionResult,
+    vaultState,
+    prices,
+    reason: intent.reason,
+    side: intent.action === "SELL" ? "SELL" : "BUY",
+  });
+
+  await vaultAdapter.recordExecution(execution.executionResult);
+
+  console.log(success("Vault intent executed and recorded"));
+  console.log(keyValue("Signature: ", execution.executionResult.txSignature ?? "—"));
+  console.log(keyValue("Input:     ", execution.inputSymbol));
+  console.log(keyValue("Output:    ", execution.outputSymbol));
+  console.log(keyValue("Exec UI:   ", String(execution.executionAmountUi)));
+  console.log(keyValue("Trades:    ", String(accounting.trades.length)));
+  console.log(keyValue("Positions: ", String(accounting.positions.length)));
+  console.log(keyValue("Realized:  ", String(accounting.realizedPnlUsd)));
+
+  if (params.config.x.autoPost) {
+    await maybeAutoPost({
+      agentId: params.agentId,
+      enabled: true,
+      reason: "vault strategy execution",
+    });
+  }
+}
+
 export async function runAgentRuntime(params: {
   agentId: string;
   rpcUrl: string;
@@ -203,6 +540,8 @@ export async function runAgentRuntime(params: {
     agentId: params.agentId,
     forceLive: params.live,
   });
+
+  const vaultConfig = resolveVaultRuntimeConfig(config);
 
   appendActionLog(
     createActionLog({
@@ -214,6 +553,11 @@ export async function runAgentRuntime(params: {
         mode: config.mode,
         version: config.version,
         rpcUrl: params.rpcUrl,
+        vaultEnabled: vaultConfig.enabled,
+        vaultId: vaultConfig.vaultId,
+        vaultSource: vaultConfig.source,
+        rangerVaultPubkey: vaultConfig.rangerVaultPubkey,
+        strategyId: vaultConfig.strategyId,
       },
     })
   );
@@ -229,10 +573,23 @@ export async function runAgentRuntime(params: {
   console.log(banner("AGENT RUNTIME ONLINE"));
   console.log(keyValue("Agent:   ", params.agentId));
   console.log(keyValue("Public:  ", config.persona.publicName));
-  console.log(keyValue("Mode:    ", config.mode));
-  console.log(keyValue("Version: ", config.version));
+  console.log(keyValue("Mode:    ", String(config.mode)));
+  console.log(keyValue("Version: ", String(config.version)));
   console.log(keyValue("RPC:     ", params.rpcUrl));
   console.log(keyValue("Loop:    ", `every ${config.runtime.loopIntervalSeconds}s`));
+
+  if (vaultConfig.enabled) {
+    console.log(keyValue("Vault:   ", "enabled"));
+    console.log(keyValue("Source:  ", vaultConfig.source));
+    console.log(keyValue("Strategy:", vaultConfig.strategyId));
+    console.log(keyValue("Vault ID:", vaultConfig.vaultId));
+    if (vaultConfig.rangerVaultPubkey) {
+      console.log(keyValue("Ranger:  ", vaultConfig.rangerVaultPubkey));
+    }
+  } else {
+    console.log(keyValue("Vault:   ", "disabled"));
+  }
+
   console.log(color(line("─", 72), ansi.gray));
 
   while (true) {
@@ -268,6 +625,53 @@ export async function runAgentRuntime(params: {
         console.log(keyValue("ATA:     ", balances.ata));
       }
       console.log("");
+
+      if (vaultConfig.enabled) {
+        await runVaultCycle({
+          agentId: params.agentId,
+          rpcUrl: params.rpcUrl,
+          config,
+          balances,
+          cycleCount: memory.counters.cycleCount,
+        });
+
+        const reputation = saveReputationFromLogs(params.agentId);
+
+        appendActionLog(
+          createActionLog({
+            agentId: params.agentId,
+            action: "summary",
+            ok: true,
+            reason: "Vault cycle summary written",
+            details: {
+              vaultEnabled: true,
+              vaultSource: vaultConfig.source,
+              rangerVaultPubkey: vaultConfig.rangerVaultPubkey,
+              strategyId: vaultConfig.strategyId,
+              vaultId: vaultConfig.vaultId,
+              reputationScore: reputation.score,
+              successfulTrades: reputation.successfulTrades,
+              successfulPayments: reputation.successfulPayments,
+              failedActions: reputation.failedActions,
+            },
+          })
+        );
+
+        console.log("");
+        console.log(section("Cycle summary"));
+        console.log(keyValue("Vault:     ", "enabled"));
+        console.log(keyValue("Source:    ", vaultConfig.source));
+        console.log(keyValue("Strategy:  ", vaultConfig.strategyId));
+        console.log(keyValue("Reputation:", String(reputation.score)));
+        console.log(keyValue("Trades:    ", String(reputation.successfulTrades)));
+        console.log(keyValue("Payments:  ", String(reputation.successfulPayments)));
+        console.log(keyValue("Failures:  ", String(reputation.failedActions)));
+        console.log(color(line("─", 72), ansi.gray));
+        console.log(subtle(`Sleeping ${config.runtime.loopIntervalSeconds}s until next cycle...`));
+
+        await sleep(config.runtime.loopIntervalSeconds * 1000);
+        continue;
+      }
 
       console.log(section("Registry check"));
       const registryResult = await runRegistryTask({

@@ -26,7 +26,7 @@
   "jupiter": {
     "enabled": true,
     "solPerTrade": 0.02,
-    "slippageBps": 100,
+    "slippageBps": 50,
     "cluster": "mainnet-beta",
     "execute": false
   },
@@ -39,5 +39,30 @@
     "dryRun": true,
     "maxPostsPerDay": 2,
     "autoPost": false
+  },
+  "vault": {
+    "enabled": true,
+    "vaultId": "ranger-vault-001",
+    "source": "ranger",
+    "rangerVaultPubkey": "EUjtN36p8jwsdghVhK4S3Wp7AU3CYQrhLyww37ZBYi7o",
+    "managerAuthority": "8EZPckdFV8h96KUTuyC4uXrbpvEuFnQpDyNRvNtzET2d",
+    "adminAuthority": "49y7u19MZveazbup6DbbH5QX7EQfFrmur4Kf6LczU4BK",
+    "listed": false
+  },
+  "strategy": {
+    "mode": "vault",
+    "strategyId": "carv-1",
+    "baseAsset": "USDC",
+    "allowedAssets": ["SOL", "JUP"],
+    "minUsdcReservePct": 0.4,
+    "maxPositionPct": 0.25,
+    "maxTradePct": 0.1,
+    "maxConcurrentPositions": 2,
+    "minConfidence": 0.65,
+    "cooldownMinutes": 360,
+    "maxDailyTrades": 4,
+    "softDrawdownPct": 0.05,
+    "hardDrawdownPct": 0.08,
+    "maxSlippageBps": 50
   }
 }

@@ -1,8 +1,5 @@
-Corsair Agent executed an on-chain payment.
+Corsair Agent simulated a Jupiter swap.
 
-0.01 SOL sent.
-Status: verified
+Size: 0 SOL
 
-Proof: https://explorer.solana.com/tx/3ti6o7YTZPqUyAxqbq6B7uKyKw1KfoGjY3PWPGETwL2udd7chmppXXgv8qrLw7P3qWCFAp61desBYjGeA2C4sMCU?cluster=devnet
-
-Machines paying machines.
+Bounded execution on Solana.

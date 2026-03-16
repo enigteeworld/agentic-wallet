@@ -83,3 +83,35 @@ export function logError(params: {
 export function getAgentLogPath(agentId: string): string {
   return logFilePath(agentId);
 }
+
+export function readActionLogs(agentId: string): AgentActionLogEntry[] {
+  const filepath = logFilePath(agentId);
+
+  if (!fs.existsSync(filepath)) {
+    return [];
+  }
+
+  return fs
+    .readFileSync(filepath, "utf8")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .flatMap((line) => {
+      try {
+        return [JSON.parse(line) as AgentActionLogEntry];
+      } catch {
+        return [];
+      }
+    });
+}
+
+export function readRecentActionLogs(
+  agentId: string,
+  limit = 50
+): AgentActionLogEntry[] {
+  const entries = readActionLogs(agentId);
+  if (entries.length <= limit) {
+    return entries;
+  }
+  return entries.slice(-limit);
+}

@@ -1,0 +1,47 @@
+[
+  {
+    "id": "trade-1773659308467-5m34r4",
+    "timestamp": "2026-03-16T11:08:28.463Z",
+    "side": "BUY",
+    "inputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "outputMint": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+    "inputAmount": 66.66666666666666,
+    "outputAmount": 393151042,
+    "executionPriceUsd": 0,
+    "feesUsd": 0,
+    "slippageBps": 50,
+    "txSignature": "unknown",
+    "strategyReason": "price=0.1695 | anchor=0.1627 | momentum=0.67 | riskPenalty=0.00 | exposurePct=0.00% | cashPct=100.00% | drawdownPct=0.00%",
+    "realizedPnlUsd": 0
+  },
+  {
+    "id": "trade-1773659706429-ku0mt0",
+    "timestamp": "2026-03-16T11:15:06.423Z",
+    "side": "SELL",
+    "inputMint": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+    "outputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "inputAmount": 393151042,
+    "outputAmount": 27039097836,
+    "executionPriceUsd": 0,
+    "feesUsd": 0,
+    "slippageBps": 50,
+    "txSignature": "unknown",
+    "strategyReason": "Hard drawdown protection triggered",
+    "realizedPnlUsd": 0
+  },
+  {
+    "id": "trade-1773661638198-o1o071",
+    "timestamp": "2026-03-16T11:47:18.193Z",
+    "side": "BUY",
+    "inputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "outputMint": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+    "inputAmount": 66.66666666666666,
+    "outputAmount": 393445406,
+    "executionPriceUsd": 0,
+    "feesUsd": 0,
+    "slippageBps": 50,
+    "txSignature": "unknown",
+    "strategyReason": "price=0.1694 | anchor=0.1627 | momentum=0.67 | riskPenalty=0.00 | exposurePct=0.00% | cashPct=100.00% | drawdownPct=0.00%",
+    "realizedPnlUsd": 0
+  }
+]

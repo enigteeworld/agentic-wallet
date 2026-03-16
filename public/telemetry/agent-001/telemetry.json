@@ -1,0 +1,210 @@
+{
+  "agentId": "agent-001",
+  "generatedAt": "2026-03-16T21:11:08.088Z",
+  "summary": {
+    "totalActions": 327,
+    "okActions": 307,
+    "failedActions": 20,
+    "successRatePct": 93.88379204892966,
+    "latestActionAt": "2026-03-16T21:08:59.968Z"
+  },
+  "reputation": {
+    "score": 211,
+    "successfulTrades": 42,
+    "successfulPayments": 53,
+    "failedActions": 20,
+    "uptimeCycles": 84,
+    "successRatePct": 93.88379204892966
+  },
+  "performance": {
+    "navUsd": 0,
+    "realizedPnlUsd": 0,
+    "unrealizedPnlUsd": 0,
+    "cumulativeReturnPct": 0,
+    "drawdownPct": 0,
+    "highWaterMarkUsd": 0,
+    "grossExposureUsd": 0,
+    "cashPct": 0
+  },
+  "trades": {
+    "total": 0,
+    "buys": 0,
+    "sells": 0,
+    "realizedPnlUsd": 0,
+    "items": []
+  },
+  "positions": {
+    "total": 0,
+    "grossMarketValueUsd": 0,
+    "items": []
+  },
+  "vault": {
+    "vaultAddress": "EUjtN36p8jwsdghVhK4S3Wp7AU3CYQrhLyww37ZBYi7o",
+    "manager": "8EZPckdFV8h96KUTuyC4uXrbpvEuFnQpDyNRvNtzET2d",
+    "admin": "49y7u19MZveazbup6DbbH5QX7EQfFrmur4Kf6LczU4BK",
+    "baseAsset": "USDC",
+    "lpSymbol": "cUSDC",
+    "protocol": "ranger",
+    "strategy": "CARV-1",
+    "network": "solana-mainnet",
+    "source": "ranger",
+    "rangerVaultPubkey": "EUjtN36p8jwsdghVhK4S3Wp7AU3CYQrhLyww37ZBYi7o",
+    "managerAuthority": "8EZPckdFV8h96KUTuyC4uXrbpvEuFnQpDyNRvNtzET2d",
+    "adminAuthority": "49y7u19MZveazbup6DbbH5QX7EQfFrmur4Kf6LczU4BK",
+    "baseAssetMint": "USDC",
+    "listed": false,
+    "updatedAt": "2026-03-16T21:08:58.982Z"
+  },
+  "recentLogs": [
+    {
+      "ts": "2026-03-16T21:08:59.968Z",
+      "action": "summary",
+      "ok": true,
+      "reason": "Vault cycle summary written"
+    },
+    {
+      "ts": "2026-03-16T21:08:59.955Z",
+      "action": "vault_cycle",
+      "ok": true,
+      "reason": "Vault strategy cycle executed"
+    },
+    {
+      "ts": "2026-03-16T21:03:57.344Z",
+      "action": "summary",
+      "ok": true,
+      "reason": "Vault cycle summary written"
+    },
+    {
+      "ts": "2026-03-16T21:03:57.333Z",
+      "action": "vault_cycle",
+      "ok": true,
+      "reason": "Vault strategy cycle executed"
+    },
+    {
+      "ts": "2026-03-16T21:03:55.260Z",
+      "action": "boot",
+      "ok": true,
+      "reason": "Agent runtime booted"
+    },
+    {
+      "ts": "2026-03-16T20:41:00.367Z",
+      "action": "x_post",
+      "ok": true,
+      "reason": "X dry-run mode active; draft not posted"
+    },
+    {
+      "ts": "2026-03-16T19:43:11.450Z",
+      "action": "summary",
+      "ok": true,
+      "reason": "Vault cycle summary written"
+    },
+    {
+      "ts": "2026-03-16T19:43:11.442Z",
+      "action": "vault_cycle",
+      "ok": true,
+      "reason": "Vault strategy cycle executed"
+    },
+    {
+      "ts": "2026-03-16T19:43:08.599Z",
+      "action": "boot",
+      "ok": true,
+      "reason": "Agent runtime booted"
+    },
+    {
+      "ts": "2026-03-16T19:41:20.516Z",
+      "action": "error",
+      "ok": false,
+      "reason": "failed to get balance of account 8EZPckdFV8h96KUTuyC4uXrbpvEuFnQpDyNRvNtzET2d: TypeError: fetch failed"
+    },
+    {
+      "ts": "2026-03-16T19:41:09.728Z",
+      "action": "boot",
+      "ok": true,
+      "reason": "Agent runtime booted"
+    },
+    {
+      "ts": "2026-03-16T19:30:46.356Z",
+      "action": "summary",
+      "ok": true,
+      "reason": "Vault cycle summary written"
+    },
+    {
+      "ts": "2026-03-16T19:30:46.348Z",
+      "action": "vault_cycle",
+      "ok": true,
+      "reason": "Vault strategy cycle executed"
+    },
+    {
+      "ts": "2026-03-16T19:30:43.519Z",
+      "action": "boot",
+      "ok": true,
+      "reason": "Agent runtime booted"
+    },
+    {
+      "ts": "2026-03-16T13:03:10.684Z",
+      "action": "error",
+      "ok": false,
+      "reason": "failed to get balance of account 8EZPckdFV8h96KUTuyC4uXrbpvEuFnQpDyNRvNtzET2d: TypeError: fetch failed"
+    },
+    {
+      "ts": "2026-03-16T12:58:00.096Z",
+      "action": "summary",
+      "ok": true,
+      "reason": "Vault cycle summary written"
+    },
+    {
+      "ts": "2026-03-16T12:58:00.031Z",
+      "action": "vault_cycle",
+      "ok": true,
+      "reason": "Vault strategy cycle executed"
+    },
+    {
+      "ts": "2026-03-16T12:52:57.231Z",
+      "action": "summary",
+      "ok": true,
+      "reason": "Vault cycle summary written"
+    },
+    {
+      "ts": "2026-03-16T12:52:57.224Z",
+      "action": "vault_cycle",
+      "ok": true,
+      "reason": "Vault strategy cycle executed"
+    },
+    {
+      "ts": "2026-03-16T12:52:55.397Z",
+      "action": "boot",
+      "ok": true,
+      "reason": "Agent runtime booted"
+    },
+    {
+      "ts": "2026-03-16T12:50:25.402Z",
+      "action": "summary",
+      "ok": true,
+      "reason": "Vault cycle summary written"
+    },
+    {
+      "ts": "2026-03-16T12:50:25.390Z",
+      "action": "vault_cycle",
+      "ok": true,
+      "reason": "Vault strategy cycle executed"
+    },
+    {
+      "ts": "2026-03-16T12:45:23.166Z",
+      "action": "summary",
+      "ok": true,
+      "reason": "Vault cycle summary written"
+    },
+    {
+      "ts": "2026-03-16T12:45:23.153Z",
+      "action": "vault_cycle",
+      "ok": true,
+      "reason": "Vault strategy cycle executed"
+    },
+    {
+      "ts": "2026-03-16T12:40:21.524Z",
+      "action": "summary",
+      "ok": true,
+      "reason": "Vault cycle summary written"
+    }
+  ]
+}
