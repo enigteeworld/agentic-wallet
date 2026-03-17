@@ -1,5 +1,6 @@
-Corsair Agent simulated a Jupiter swap.
+Corsair Agent is online.
 
-Size: 0 SOL
+Mode: safe
+Version: 0.1.0
 
-Bounded execution on Solana.
+Autonomous checks have started.

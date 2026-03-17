@@ -1,42 +1,116 @@
 {
   "agentId": "agent-001",
-  "generatedAt": "2026-03-16T21:11:08.088Z",
+  "generatedAt": "2026-03-17T12:44:52.059Z",
   "summary": {
-    "totalActions": 327,
-    "okActions": 307,
+    "totalActions": 374,
+    "okActions": 354,
     "failedActions": 20,
-    "successRatePct": 93.88379204892966,
-    "latestActionAt": "2026-03-16T21:08:59.968Z"
+    "successRatePct": 94.6524064171123,
+    "latestActionAt": "2026-03-17T12:40:06.843Z"
   },
   "reputation": {
-    "score": 211,
-    "successfulTrades": 42,
+    "score": 248,
+    "successfulTrades": 50,
     "successfulPayments": 53,
     "failedActions": 20,
-    "uptimeCycles": 84,
-    "successRatePct": 93.88379204892966
+    "uptimeCycles": 102,
+    "successRatePct": 94.6524064171123
   },
   "performance": {
-    "navUsd": 0,
-    "realizedPnlUsd": 0,
-    "unrealizedPnlUsd": 0,
-    "cumulativeReturnPct": 0,
-    "drawdownPct": 0,
-    "highWaterMarkUsd": 0,
-    "grossExposureUsd": 0,
-    "cashPct": 0
+    "navUsd": 999.9999980070313,
+    "realizedPnlUsd": 1.039031288471003e-9,
+    "unrealizedPnlUsd": -0.0000024598056677277356,
+    "cumulativeReturnPct": -1.992968691411079e-9,
+    "drawdownPct": 1.992968691411079e-9,
+    "highWaterMarkUsd": 1000,
+    "grossExposureUsd": 0.00006837274340246086,
+    "cashPct": 0.9999999316272565,
+    "updatedAt": "2026-03-17T12:40:06.787Z"
   },
   "trades": {
-    "total": 0,
-    "buys": 0,
-    "sells": 0,
-    "realizedPnlUsd": 0,
-    "items": []
+    "total": 4,
+    "buys": 1,
+    "sells": 3,
+    "realizedPnlUsd": 1.039031288471003e-9,
+    "latestTradeAt": "2026-03-17T12:40:06.772Z",
+    "items": [
+      {
+        "id": "trade-1773751206787-b5510v",
+        "timestamp": "2026-03-17T12:40:06.772Z",
+        "side": "SELL",
+        "inputMint": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+        "outputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "inputAmount": 4.17e-10,
+        "outputAmount": 6.8e-11,
+        "executionPriceUsd": 1.0051499681712543,
+        "feesUsd": 0,
+        "slippageBps": 50,
+        "txSignature": "simulated",
+        "strategyReason": "Bearish exit: price=0.1639 | anchor=0.1698 | momentum=0.33 | riskPenalty=0.00 | exposurePct=0.00% | cashPct=100.00% | drawdownPct=0.00% | cooldownRemaining=0m",
+        "realizedPnlUsd": 3.4833834433253553e-10
+      },
+      {
+        "id": "trade-1773750891969-34cpf5",
+        "timestamp": "2026-03-17T12:34:51.955Z",
+        "side": "SELL",
+        "inputMint": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+        "outputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "inputAmount": 4.17e-10,
+        "outputAmount": 6.9e-11,
+        "executionPriceUsd": 0.9966504450189388,
+        "feesUsd": 0,
+        "slippageBps": 50,
+        "txSignature": "simulated",
+        "strategyReason": "Bearish exit: price=0.1649 | anchor=0.1698 | momentum=0.36 | riskPenalty=0.00 | exposurePct=0.00% | cashPct=100.00% | drawdownPct=0.00% | cooldownRemaining=0m",
+        "realizedPnlUsd": 3.4479404317801996e-10
+      },
+      {
+        "id": "trade-1773750575570-255dk5",
+        "timestamp": "2026-03-17T12:29:35.551Z",
+        "side": "SELL",
+        "inputMint": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+        "outputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "inputAmount": 4.17e-10,
+        "outputAmount": 6.9e-11,
+        "executionPriceUsd": 0.9992999840655273,
+        "feesUsd": 0,
+        "slippageBps": 50,
+        "txSignature": "simulated",
+        "strategyReason": "Bearish exit: price=0.1654 | anchor=0.1698 | momentum=0.37 | riskPenalty=0.00 | exposurePct=0.00% | cashPct=100.00% | drawdownPct=0.00% | cooldownRemaining=0m",
+        "realizedPnlUsd": 3.458989009604474e-10
+      },
+      {
+        "id": "trade-1773696267924-cha11a",
+        "timestamp": "2026-03-16T21:24:27.916Z",
+        "side": "BUY",
+        "inputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "outputMint": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+        "inputAmount": 0.000070833333,
+        "outputAmount": 0.0004171388,
+        "executionPriceUsd": 0.16980621677428662,
+        "feesUsd": 0,
+        "slippageBps": 50,
+        "txSignature": "simulated",
+        "strategyReason": "price=0.1697 | anchor=0.1629 | momentum=0.71 | riskPenalty=0.00 | exposurePct=0.00% | cashPct=100.00% | drawdownPct=0.00% | cooldownRemaining=0m",
+        "realizedPnlUsd": 0
+      }
+    ]
   },
   "positions": {
-    "total": 0,
-    "grossMarketValueUsd": 0,
-    "items": []
+    "total": 1,
+    "grossMarketValueUsd": 0.00006837274340246086,
+    "items": [
+      {
+        "mint": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+        "symbol": "JUP",
+        "quantity": 0.00041713754899999996,
+        "avgEntryPriceUsd": 0.16980621677428662,
+        "currentPriceUsd": 0.16390934732768656,
+        "marketValueUsd": 0.00006837274340246086,
+        "unrealizedPnlUsd": -0.0000024598056677277356,
+        "updatedAt": "2026-03-17T12:40:06.787Z"
+      }
+    ]
   },
   "vault": {
     "vaultAddress": "EUjtN36p8jwsdghVhK4S3Wp7AU3CYQrhLyww37ZBYi7o",
@@ -53,155 +127,155 @@
     "adminAuthority": "49y7u19MZveazbup6DbbH5QX7EQfFrmur4Kf6LczU4BK",
     "baseAssetMint": "USDC",
     "listed": false,
-    "updatedAt": "2026-03-16T21:08:58.982Z"
+    "updatedAt": "2026-03-17T12:39:52.864Z"
   },
   "recentLogs": [
     {
-      "ts": "2026-03-16T21:08:59.968Z",
+      "ts": "2026-03-17T12:40:06.843Z",
       "action": "summary",
       "ok": true,
       "reason": "Vault cycle summary written"
     },
     {
-      "ts": "2026-03-16T21:08:59.955Z",
+      "ts": "2026-03-17T12:40:06.774Z",
+      "action": "jupiter_swap",
+      "ok": true,
+      "reason": "Jupiter task completed successfully"
+    },
+    {
+      "ts": "2026-03-17T12:39:53.477Z",
+      "action": "jupiter_swap",
+      "ok": true,
+      "reason": "Simulating Jupiter swap"
+    },
+    {
+      "ts": "2026-03-17T12:39:53.472Z",
       "action": "vault_cycle",
       "ok": true,
       "reason": "Vault strategy cycle executed"
     },
     {
-      "ts": "2026-03-16T21:03:57.344Z",
+      "ts": "2026-03-17T12:34:52.006Z",
       "action": "summary",
       "ok": true,
       "reason": "Vault cycle summary written"
     },
     {
-      "ts": "2026-03-16T21:03:57.333Z",
+      "ts": "2026-03-17T12:34:51.956Z",
+      "action": "jupiter_swap",
+      "ok": true,
+      "reason": "Jupiter task completed successfully"
+    },
+    {
+      "ts": "2026-03-17T12:34:38.007Z",
+      "action": "jupiter_swap",
+      "ok": true,
+      "reason": "Simulating Jupiter swap"
+    },
+    {
+      "ts": "2026-03-17T12:34:38.002Z",
       "action": "vault_cycle",
       "ok": true,
       "reason": "Vault strategy cycle executed"
     },
     {
-      "ts": "2026-03-16T21:03:55.260Z",
-      "action": "boot",
-      "ok": true,
-      "reason": "Agent runtime booted"
-    },
-    {
-      "ts": "2026-03-16T20:41:00.367Z",
-      "action": "x_post",
-      "ok": true,
-      "reason": "X dry-run mode active; draft not posted"
-    },
-    {
-      "ts": "2026-03-16T19:43:11.450Z",
+      "ts": "2026-03-17T12:29:35.601Z",
       "action": "summary",
       "ok": true,
       "reason": "Vault cycle summary written"
     },
     {
-      "ts": "2026-03-16T19:43:11.442Z",
+      "ts": "2026-03-17T12:29:35.554Z",
+      "action": "jupiter_swap",
+      "ok": true,
+      "reason": "Jupiter task completed successfully"
+    },
+    {
+      "ts": "2026-03-17T12:29:26.163Z",
+      "action": "jupiter_swap",
+      "ok": true,
+      "reason": "Simulating Jupiter swap"
+    },
+    {
+      "ts": "2026-03-17T12:29:26.097Z",
       "action": "vault_cycle",
       "ok": true,
       "reason": "Vault strategy cycle executed"
     },
     {
-      "ts": "2026-03-16T19:43:08.599Z",
-      "action": "boot",
-      "ok": true,
-      "reason": "Agent runtime booted"
-    },
-    {
-      "ts": "2026-03-16T19:41:20.516Z",
-      "action": "error",
-      "ok": false,
-      "reason": "failed to get balance of account 8EZPckdFV8h96KUTuyC4uXrbpvEuFnQpDyNRvNtzET2d: TypeError: fetch failed"
-    },
-    {
-      "ts": "2026-03-16T19:41:09.728Z",
-      "action": "boot",
-      "ok": true,
-      "reason": "Agent runtime booted"
-    },
-    {
-      "ts": "2026-03-16T19:30:46.356Z",
+      "ts": "2026-03-17T12:24:24.291Z",
       "action": "summary",
       "ok": true,
       "reason": "Vault cycle summary written"
     },
     {
-      "ts": "2026-03-16T19:30:46.348Z",
+      "ts": "2026-03-17T12:24:24.278Z",
       "action": "vault_cycle",
       "ok": true,
       "reason": "Vault strategy cycle executed"
     },
     {
-      "ts": "2026-03-16T19:30:43.519Z",
-      "action": "boot",
-      "ok": true,
-      "reason": "Agent runtime booted"
-    },
-    {
-      "ts": "2026-03-16T13:03:10.684Z",
-      "action": "error",
-      "ok": false,
-      "reason": "failed to get balance of account 8EZPckdFV8h96KUTuyC4uXrbpvEuFnQpDyNRvNtzET2d: TypeError: fetch failed"
-    },
-    {
-      "ts": "2026-03-16T12:58:00.096Z",
+      "ts": "2026-03-17T12:19:21.215Z",
       "action": "summary",
       "ok": true,
       "reason": "Vault cycle summary written"
     },
     {
-      "ts": "2026-03-16T12:58:00.031Z",
+      "ts": "2026-03-17T12:19:21.195Z",
       "action": "vault_cycle",
       "ok": true,
       "reason": "Vault strategy cycle executed"
     },
     {
-      "ts": "2026-03-16T12:52:57.231Z",
+      "ts": "2026-03-17T12:14:19.130Z",
       "action": "summary",
       "ok": true,
       "reason": "Vault cycle summary written"
     },
     {
-      "ts": "2026-03-16T12:52:57.224Z",
+      "ts": "2026-03-17T12:14:19.113Z",
       "action": "vault_cycle",
       "ok": true,
       "reason": "Vault strategy cycle executed"
     },
     {
-      "ts": "2026-03-16T12:52:55.397Z",
-      "action": "boot",
-      "ok": true,
-      "reason": "Agent runtime booted"
-    },
-    {
-      "ts": "2026-03-16T12:50:25.402Z",
+      "ts": "2026-03-17T12:09:14.870Z",
       "action": "summary",
       "ok": true,
       "reason": "Vault cycle summary written"
     },
     {
-      "ts": "2026-03-16T12:50:25.390Z",
+      "ts": "2026-03-17T12:09:14.826Z",
       "action": "vault_cycle",
       "ok": true,
       "reason": "Vault strategy cycle executed"
     },
     {
-      "ts": "2026-03-16T12:45:23.166Z",
+      "ts": "2026-03-17T12:04:12.931Z",
       "action": "summary",
       "ok": true,
       "reason": "Vault cycle summary written"
     },
     {
-      "ts": "2026-03-16T12:45:23.153Z",
+      "ts": "2026-03-17T12:04:12.913Z",
       "action": "vault_cycle",
       "ok": true,
       "reason": "Vault strategy cycle executed"
     },
     {
-      "ts": "2026-03-16T12:40:21.524Z",
+      "ts": "2026-03-17T11:59:10.602Z",
+      "action": "summary",
+      "ok": true,
+      "reason": "Vault cycle summary written"
+    },
+    {
+      "ts": "2026-03-17T11:59:10.578Z",
+      "action": "vault_cycle",
+      "ok": true,
+      "reason": "Vault strategy cycle executed"
+    },
+    {
+      "ts": "2026-03-17T11:54:07.899Z",
       "action": "summary",
       "ok": true,
       "reason": "Vault cycle summary written"
