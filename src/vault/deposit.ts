@@ -1,0 +1,209 @@
+import fs from "fs";
+import path from "path";
+import { BN } from "@coral-xyz/anchor";
+import {
+  Connection,
+  PublicKey,
+  Transaction,
+  sendAndConfirmTransaction,
+  SendTransactionError,
+} from "@solana/web3.js";
+import {
+  TOKEN_PROGRAM_ID,
+  getMint,
+  getOrCreateAssociatedTokenAccount,
+} from "@solana/spl-token";
+import { VoltrClient } from "@voltr/vault-sdk";
+import { WalletManager } from "../wallet/walletManager";
+
+type AgentConfig = {
+  agentId?: string;
+  vault?: {
+    enabled?: boolean;
+    rangerVaultPubkey?: string;
+    assetMint?: string;
+  };
+  strategy?: {
+    baseAsset?: string;
+  };
+};
+
+export type DepositToVaultParams = {
+  agentId: string;
+  rpcUrl: string;
+  amountUi: string;
+  vaultAssetMint?: string;
+};
+
+function loadAgentConfig(agentId: string): AgentConfig {
+  const configPath = path.join(process.cwd(), "config", `${agentId}.json`);
+
+  if (!fs.existsSync(configPath)) {
+    throw new Error(`Missing config file: ${configPath}`);
+  }
+
+  return JSON.parse(fs.readFileSync(configPath, "utf8")) as AgentConfig;
+}
+
+function requireVaultPubkey(config: AgentConfig, agentId: string): PublicKey {
+  const value = config.vault?.rangerVaultPubkey;
+
+  if (!value) {
+    throw new Error(
+      `Missing vault.rangerVaultPubkey in config/${agentId}.json`,
+    );
+  }
+
+  return new PublicKey(value);
+}
+
+function resolveVaultAssetMint(
+  config: AgentConfig,
+  override?: string,
+): PublicKey {
+  if (override) {
+    return new PublicKey(override);
+  }
+
+  if (config.vault?.assetMint) {
+    return new PublicKey(config.vault.assetMint);
+  }
+
+  const baseAsset = config.strategy?.baseAsset?.toUpperCase();
+
+  if (!baseAsset || baseAsset === "USDC") {
+    return new PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
+  }
+
+  throw new Error(
+    `Could not infer vault asset mint from strategy.baseAsset=${config.strategy?.baseAsset}. Pass --mint explicitly or set vault.assetMint in config.`,
+  );
+}
+
+function uiToBaseUnits(amountUi: string, decimals: number): bigint {
+  const normalized = amountUi.trim();
+
+  if (!/^\d+(\.\d+)?$/.test(normalized)) {
+    throw new Error(`Invalid amount: ${amountUi}`);
+  }
+
+  const [whole, frac = ""] = normalized.split(".");
+  const fracPadded = (frac + "0".repeat(decimals)).slice(0, decimals);
+  const full = `${whole}${fracPadded}`.replace(/^0+(?=\d)/, "");
+
+  return BigInt(full || "0");
+}
+
+export async function depositToVault({
+  agentId,
+  rpcUrl,
+  amountUi,
+  vaultAssetMint: vaultAssetMintOverride,
+}: DepositToVaultParams): Promise<void> {
+  const connection = new Connection(rpcUrl, "confirmed");
+  const walletManager = new WalletManager(connection);
+  const wallet = walletManager.loadOrCreateEncryptedKeypairOrThrow(agentId);
+
+  const config = loadAgentConfig(agentId);
+
+  if (!config.vault?.enabled) {
+    throw new Error(`Vault is not enabled in config/${agentId}.json`);
+  }
+
+  const vault = requireVaultPubkey(config, agentId);
+  const vaultAssetMint = resolveVaultAssetMint(
+    config,
+    vaultAssetMintOverride,
+  );
+
+  const mintInfo = await getMint(
+    connection,
+    vaultAssetMint,
+    "confirmed",
+    TOKEN_PROGRAM_ID,
+  );
+
+  const amountBaseUnits = uiToBaseUnits(amountUi, mintInfo.decimals);
+
+  if (amountBaseUnits <= 0n) {
+    throw new Error("Deposit amount must be greater than 0");
+  }
+
+  const client = new VoltrClient(connection);
+  const amountBn = new BN(amountBaseUnits.toString());
+
+  const { vaultLpMint } = client.findVaultAddresses(vault);
+
+  console.log("\n-- Ranger Vault Deposit");
+  console.log(`Agent: ${agentId}`);
+  console.log(`Wallet: ${wallet.publicKey.toBase58()}`);
+  console.log(`RPC: ${rpcUrl}`);
+  console.log(`Vault: ${vault.toBase58()}`);
+  console.log(`Vault asset mint: ${vaultAssetMint.toBase58()}`);
+  console.log(`Vault LP mint: ${vaultLpMint.toBase58()}`);
+  console.log(`Amount UI: ${amountUi}`);
+  console.log(`Amount base units: ${amountBaseUnits.toString()}`);
+
+  // Important: Ranger expects the user's LP ATA to already exist.
+  const userLpAta = await getOrCreateAssociatedTokenAccount(
+    connection,
+    wallet,
+    vaultLpMint,
+    wallet.publicKey,
+    false,
+    "confirmed",
+    { commitment: "confirmed" },
+    TOKEN_PROGRAM_ID,
+  );
+
+  console.log(`User LP ATA: ${userLpAta.address.toBase58()}`);
+
+  const depositIx = await client.createDepositVaultIx(amountBn, {
+    userTransferAuthority: wallet.publicKey,
+    vault,
+    vaultAssetMint,
+    assetTokenProgram: TOKEN_PROGRAM_ID,
+  });
+
+  const tx = new Transaction().add(depositIx);
+  tx.feePayer = wallet.publicKey;
+
+  try {
+    const sig = await sendAndConfirmTransaction(connection, tx, [wallet], {
+      commitment: "confirmed",
+      skipPreflight: false,
+    });
+
+    console.log("\nDeposit confirmed");
+    console.log(`Signature: ${sig}`);
+    console.log(
+      `Explorer: https://explorer.solana.com/tx/${sig}?cluster=mainnet-beta`,
+    );
+  } catch (err) {
+    if (err instanceof SendTransactionError) {
+      console.error("\nDeposit simulation failed");
+      console.error(`Message: ${err.message}`);
+
+      if (typeof err.getLogs === "function") {
+        try {
+          const logs = await err.getLogs(connection);
+          console.error("Logs:");
+          for (const line of logs) {
+            console.error(line);
+          }
+        } catch {
+          if ("transactionLogs" in err && Array.isArray((err as any).transactionLogs)) {
+            console.error("Logs:");
+            for (const line of (err as any).transactionLogs) {
+              console.error(line);
+            }
+          }
+        }
+      }
+
+      throw err;
+    }
+
+    throw err;
+  }
+}

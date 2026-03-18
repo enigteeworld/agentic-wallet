@@ -1,6 +1,13 @@
 import fs from "fs";
 import path from "path";
 import { Connection, PublicKey } from "@solana/web3.js";
+import {
+  getAccount,
+  getAssociatedTokenAddressSync,
+  getMint,
+  TOKEN_PROGRAM_ID,
+} from "@solana/spl-token";
+import { VoltrClient } from "@voltr/vault-sdk";
 import type {
   ExecutionResult,
   PerformanceSnapshot,
@@ -195,12 +202,45 @@ export class RangerVaultAdapter implements VaultAdapter {
       listed: this.params.listed,
     });
 
-    const metadata = readJsonFile<PersistedVaultMetadata>(filepath, fallback);
+    const raw = readJsonFile<Record<string, unknown>>(filepath, {});
 
-    if (!fs.existsSync(filepath)) {
-      writeJsonFile(filepath, metadata);
-    }
+    const metadata: PersistedVaultMetadata = {
+      vaultId:
+        typeof raw.vaultId === "string" && raw.vaultId.trim().length > 0
+          ? raw.vaultId
+          : this.params.vaultId,
+      source:
+        raw.source === "ranger" || raw.source === "local"
+          ? raw.source
+          : this.source,
+      rangerVaultPubkey:
+        typeof raw.rangerVaultPubkey === "string" && raw.rangerVaultPubkey.trim().length > 0
+          ? raw.rangerVaultPubkey
+          : this.params.rangerVaultPubkey,
+      managerAuthority:
+        typeof raw.managerAuthority === "string" && raw.managerAuthority.trim().length > 0
+          ? raw.managerAuthority
+          : this.params.managerAuthority,
+      adminAuthority:
+        typeof raw.adminAuthority === "string" && raw.adminAuthority.trim().length > 0
+          ? raw.adminAuthority
+          : this.params.adminAuthority,
+      baseAssetMint:
+        typeof raw.baseAssetMint === "string" && raw.baseAssetMint.trim().length > 0
+          ? raw.baseAssetMint
+          : this.params.baseAssetMint,
+      listed:
+        typeof raw.listed === "boolean"
+          ? raw.listed
+          : this.params.listed ?? false,
+      createdAt:
+        typeof raw.createdAt === "string" && raw.createdAt.trim().length > 0
+          ? raw.createdAt
+          : fallback.createdAt,
+      updatedAt: nowIso(),
+    };
 
+    writeJsonFile(filepath, metadata);
     return metadata;
   }
 
@@ -218,22 +258,24 @@ export class RangerVaultAdapter implements VaultAdapter {
       const connection = new Connection(this.rpcUrl, "confirmed");
       const vaultPk = new PublicKey(this.params.rangerVaultPubkey);
       const baseMintPk = new PublicKey(this.params.baseAssetMint);
+      const client = new VoltrClient(connection);
 
-      const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
-        vaultPk,
-        { mint: baseMintPk },
-        "confirmed"
+      const { vaultAssetIdleAuth } = client.findVaultAddresses(vaultPk);
+
+      const vaultAssetIdleAta = getAssociatedTokenAddressSync(
+        baseMintPk,
+        vaultAssetIdleAuth,
+        true,
+        TOKEN_PROGRAM_ID,
       );
 
-      if (!tokenAccounts.value.length) {
-        return 0;
-      }
+      const [account, mintInfo] = await Promise.all([
+        getAccount(connection, vaultAssetIdleAta, "confirmed", TOKEN_PROGRAM_ID),
+        getMint(connection, baseMintPk, "confirmed", TOKEN_PROGRAM_ID),
+      ]);
 
-      const totalUi = tokenAccounts.value.reduce((sum, account) => {
-        const parsed: any = account.account.data;
-        const uiAmount = parsed?.parsed?.info?.tokenAmount?.uiAmount ?? 0;
-        return sum + Number(uiAmount);
-      }, 0);
+      const decimals = mintInfo.decimals;
+      const totalUi = Number(account.amount) / 10 ** decimals;
 
       return Number.isFinite(totalUi) ? totalUi : 0;
     } catch {
@@ -246,6 +288,10 @@ export class RangerVaultAdapter implements VaultAdapter {
 
     const nextMetadata: PersistedVaultMetadata = {
       ...metadata,
+      vaultId:
+        metadata.vaultId && metadata.vaultId.trim().length > 0
+          ? metadata.vaultId
+          : this.params.vaultId,
       source: this.source,
       rangerVaultPubkey:
         this.params.rangerVaultPubkey ?? metadata.rangerVaultPubkey,

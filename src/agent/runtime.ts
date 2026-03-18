@@ -73,6 +73,9 @@ const ansi = {
   gray: "\x1b[90m",
 };
 
+const MIN_NAV_USD_TO_EXECUTE = 5;
+const MIN_TRADE_NOTIONAL_USD = 0.2;
+
 type VaultRuntimeResolvedConfig = {
   enabled: boolean;
   vaultId: string;
@@ -80,6 +83,7 @@ type VaultRuntimeResolvedConfig = {
   rangerVaultPubkey?: string;
   managerAuthority?: string;
   adminAuthority?: string;
+  assetMint?: string;
   listed: boolean;
   strategyId: string;
   baseAsset: string;
@@ -167,6 +171,13 @@ function resolveVaultRuntimeConfig(config: AgentConfig): VaultRuntimeResolvedCon
     vault?.enabled === true ||
     strategy?.mode === "vault";
 
+  const rawAssetMint = (vault as any)?.assetMint as string | undefined;
+  const strategyBaseAsset = strategy?.baseAsset ?? "USDC";
+  const inferredAssetMint =
+    strategyBaseAsset.toUpperCase() === "USDC"
+      ? "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      : undefined;
+
   return {
     enabled,
     vaultId: vault?.vaultId ?? "ranger-vault-001",
@@ -174,9 +185,10 @@ function resolveVaultRuntimeConfig(config: AgentConfig): VaultRuntimeResolvedCon
     rangerVaultPubkey: vault?.rangerVaultPubkey,
     managerAuthority: vault?.managerAuthority,
     adminAuthority: vault?.adminAuthority,
+    assetMint: rawAssetMint ?? inferredAssetMint,
     listed: vault?.listed ?? false,
     strategyId: strategy?.strategyId ?? "carv-1",
-    baseAsset: strategy?.baseAsset ?? "USDC",
+    baseAsset: strategyBaseAsset,
     allowedAssets: strategy?.allowedAssets ?? ["SOL", "JUP"],
     minUsdcReservePct: strategy?.minUsdcReservePct ?? 0.4,
     maxPositionPct: strategy?.maxPositionPct ?? 0.25,
@@ -339,7 +351,7 @@ async function runVaultCycle(params: {
   const vaultAdapter = new RangerVaultAdapter({
     agentId: params.agentId,
     vaultId: vaultConfig.vaultId,
-    baseAssetMint: vaultConfig.baseAsset,
+    baseAssetMint: vaultConfig.assetMint ?? vaultConfig.baseAsset,
     minReservePct: vaultConfig.minUsdcReservePct,
     source: vaultConfig.source,
     rangerVaultPubkey: vaultConfig.rangerVaultPubkey,
@@ -377,6 +389,13 @@ async function runVaultCycle(params: {
   };
 
   const intent = await generateIntent(context);
+
+  const navUsd = Number(vaultState.totalValueUsd ?? 0);
+  if (navUsd < MIN_NAV_USD_TO_EXECUTE) {
+    intent.action = "HOLD";
+    intent.reason = "NAV below execution threshold";
+  }
+
   const policyDecision = validateIntent(intent, context);
 
   console.log(section("Vault identity"));
@@ -399,6 +418,9 @@ async function runVaultCycle(params: {
   console.log(keyValue("Strategy: ", vaultConfig.strategyId));
   console.log(keyValue("Vault ID: ", vaultConfig.vaultId));
   console.log(keyValue("Base:     ", vaultConfig.baseAsset));
+  if (vaultConfig.assetMint) {
+    console.log(keyValue("Mint:     ", vaultConfig.assetMint));
+  }
   console.log(keyValue("Universe: ", vaultConfig.allowedAssets.join(", ")));
   console.log(keyValue("Reserve:  ", `${(vaultConfig.minUsdcReservePct * 100).toFixed(0)}%`));
   console.log(keyValue("Max pos:  ", `${(vaultConfig.maxPositionPct * 100).toFixed(0)}%`));
@@ -408,6 +430,8 @@ async function runVaultCycle(params: {
   console.log(keyValue("Soft DD:  ", `${(vaultConfig.softDrawdownPct * 100).toFixed(1)}%`));
   console.log(keyValue("Hard DD:  ", `${(vaultConfig.hardDrawdownPct * 100).toFixed(1)}%`));
   console.log(keyValue("Slippage: ", `${vaultConfig.maxSlippageBps} bps`));
+  console.log(keyValue("Min NAV:  ", `${MIN_NAV_USD_TO_EXECUTE} USD`));
+  console.log(keyValue("Min exec: ", `${MIN_TRADE_NOTIONAL_USD} USD`));
   console.log("");
 
   console.log(section("Vault state"));
@@ -456,6 +480,7 @@ async function runVaultCycle(params: {
         strategyId: vaultConfig.strategyId,
         vaultId: vaultConfig.vaultId,
         baseAsset: vaultConfig.baseAsset,
+        assetMint: vaultConfig.assetMint,
         allowedAssets: vaultConfig.allowedAssets,
         balances: {
           sol: params.balances.sol,
@@ -478,12 +503,56 @@ async function runVaultCycle(params: {
   );
 
   if (intent.action === "HOLD") {
+    if (intent.reason === "NAV below execution threshold") {
+      appendActionLog(
+        createActionLog({
+          agentId: params.agentId,
+          action: "vault_skip_execution",
+          ok: true,
+          reason: `NAV too small for execution (${navUsd.toFixed(4)} < ${MIN_NAV_USD_TO_EXECUTE})`,
+          details: {
+            navUsd,
+            minNavUsdToExecute: MIN_NAV_USD_TO_EXECUTE,
+            targetNotionalUsd: Number(intent.targetNotionalUsd ?? 0),
+            intent,
+          },
+        })
+      );
+
+      console.log(warn(`Vault execution skipped: NAV too small for execution (${navUsd.toFixed(4)} < ${MIN_NAV_USD_TO_EXECUTE})`));
+      return;
+    }
+
     console.log(warn("Vault strategy is holding"));
     return;
   }
 
   if (!policyDecision.approved) {
     console.log(warn("Vault intent rejected by policy"));
+    return;
+  }
+
+  const targetNotionalUsd = Number(intent.targetNotionalUsd ?? 0);
+
+  if (targetNotionalUsd < MIN_TRADE_NOTIONAL_USD) {
+    const reason = `Trade notional too small (${targetNotionalUsd.toFixed(6)} < ${MIN_TRADE_NOTIONAL_USD})`;
+
+    appendActionLog(
+      createActionLog({
+        agentId: params.agentId,
+        action: "vault_skip_execution",
+        ok: true,
+        reason,
+        details: {
+          navUsd,
+          targetNotionalUsd,
+          minTradeNotionalUsd: MIN_TRADE_NOTIONAL_USD,
+          intent,
+        },
+      })
+    );
+
+    console.log(warn(`Vault execution skipped: ${reason}`));
     return;
   }
 
@@ -558,6 +627,7 @@ export async function runAgentRuntime(params: {
         vaultSource: vaultConfig.source,
         rangerVaultPubkey: vaultConfig.rangerVaultPubkey,
         strategyId: vaultConfig.strategyId,
+        assetMint: vaultConfig.assetMint,
       },
     })
   );
@@ -583,6 +653,9 @@ export async function runAgentRuntime(params: {
     console.log(keyValue("Source:  ", vaultConfig.source));
     console.log(keyValue("Strategy:", vaultConfig.strategyId));
     console.log(keyValue("Vault ID:", vaultConfig.vaultId));
+    if (vaultConfig.assetMint) {
+      console.log(keyValue("Mint:    ", vaultConfig.assetMint));
+    }
     if (vaultConfig.rangerVaultPubkey) {
       console.log(keyValue("Ranger:  ", vaultConfig.rangerVaultPubkey));
     }
@@ -649,6 +722,7 @@ export async function runAgentRuntime(params: {
               rangerVaultPubkey: vaultConfig.rangerVaultPubkey,
               strategyId: vaultConfig.strategyId,
               vaultId: vaultConfig.vaultId,
+              assetMint: vaultConfig.assetMint,
               reputationScore: reputation.score,
               successfulTrades: reputation.successfulTrades,
               successfulPayments: reputation.successfulPayments,

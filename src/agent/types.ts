@@ -10,6 +10,7 @@ export type AgentActionType =
   | "draft_post"
   | "x_post"
   | "vault_cycle"
+  | "vault_skip_execution" // ✅ added
   | "summary"
   | "error"
   | "noop";

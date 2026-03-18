@@ -73,5 +73,20 @@
     "txSignature": "simulated",
     "strategyReason": "Bearish exit: price=0.1641 | anchor=0.1698 | momentum=0.33 | riskPenalty=0.00 | exposurePct=0.00% | cashPct=100.00% | drawdownPct=0.00% | cooldownRemaining=0m",
     "realizedPnlUsd": 3.470427856174186e-10
+  },
+  {
+    "id": "trade-1773791154740-5tvqfo",
+    "timestamp": "2026-03-17T23:45:54.729Z",
+    "side": "BUY",
+    "inputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "outputMint": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+    "inputAmount": 5.6666e-8,
+    "outputAmount": 3.2835e-7,
+    "executionPriceUsd": 0.17256145342341336,
+    "feesUsd": 0,
+    "slippageBps": 50,
+    "txSignature": "simulated",
+    "strategyReason": "price=0.1726 | anchor=0.1657 | momentum=0.71 | riskPenalty=0.00 | exposurePct=0.00% | cashPct=100.00% | drawdownPct=0.00% | cooldownRemaining=0m",
+    "realizedPnlUsd": 0
   }
 ]

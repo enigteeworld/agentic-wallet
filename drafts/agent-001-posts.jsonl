@@ -88,3 +88,14 @@
 {"ts":"2026-03-17T17:11:11.841Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
 {"ts":"2026-03-17T17:15:24.828Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
 {"ts":"2026-03-17T18:26:12.640Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
+{"ts":"2026-03-17T21:57:52.965Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
+{"ts":"2026-03-17T22:13:39.523Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
+{"ts":"2026-03-17T22:18:13.069Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
+{"ts":"2026-03-17T22:30:04.771Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
+{"ts":"2026-03-17T22:54:08.279Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
+{"ts":"2026-03-17T22:55:14.035Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
+{"ts":"2026-03-17T23:45:54.732Z","agentId":"agent-001","kind":"jupiter_swap","text":"Corsair Agent simulated a Jupiter swap.\n\nSize: 0 SOL\n\nBounded execution on Solana."}
+{"ts":"2026-03-18T17:32:29.472Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
+{"ts":"2026-03-18T18:05:55.498Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
+{"ts":"2026-03-18T18:24:13.256Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
+{"ts":"2026-03-18T18:54:54.804Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}

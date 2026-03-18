@@ -98,5 +98,25 @@
       "inputDecimals": 6,
       "outputDecimals": 6
     }
+  },
+  {
+    "success": true,
+    "inputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "outputMint": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+    "inputAmount": 5.6666e-8,
+    "outputAmount": 3.2835e-7,
+    "effectivePriceUsd": 0.17256145342341336,
+    "slippageBps": 50,
+    "feesUsd": 0,
+    "executedAt": "2026-03-17T23:45:54.729Z",
+    "raw": {
+      "cluster": "mainnet-beta",
+      "stdoutTail": "C8G4wEGGkZwyTDt1v\nOutput Mint: JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN\nInput Amount Raw: 56666\nOutput Amount Raw: 328350\nInput Amount UI: 0.056666\nOutput Amount UI: 0.32835\nRoute Hops: 1\n\n2) Building swap transaction...\n✅ Received serialized swap transaction\nswapTransaction(base64) length: 784\n\n3) Signing + simulating...\n✅ Simulation complete\nLogs (first 10):\n  Program ComputeBudget111111111111111111111111111111 invoke [1]\n  Program ComputeBudget111111111111111111111111111111 success\n  Program ComputeBudget111111111111111111111111111111 invoke [1]\n  Program ComputeBudget111111111111111111111111111111 success\n  Program ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL invoke [1]\n  Program log: CreateIdempotent\n  Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [2]\n  Program log: Instruction: GetAccountDataSize\n  Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 1569 of 73690 compute units\n  Program return: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA pQAAAAAAAAA=\n\nDRY-RUN finished ✅ (no on-chain swap sent)\nInput Mint: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\nOutput Mint: JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN\nInput Amount: 0.056666\nOutput Amount: 0.32835\n",
+      "stderrTail": "",
+      "rawInputAmount": 0.056666,
+      "rawOutputAmount": 0.32835,
+      "inputDecimals": 6,
+      "outputDecimals": 6
+    }
   }
 ]

@@ -2,11 +2,11 @@
   {
     "mint": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
     "symbol": "JUP",
-    "quantity": 0.00041713713299999994,
-    "avgEntryPriceUsd": 0.16980621677428662,
-    "currentPriceUsd": 0.16412252497512647,
-    "marketValueUsd": 0.00006846159952884514,
-    "unrealizedPnlUsd": -0.0000023708789019572748,
-    "updatedAt": "2026-03-17T12:45:19.545Z"
+    "quantity": 3.2835e-7,
+    "avgEntryPriceUsd": 0.17256145342341336,
+    "currentPriceUsd": 0.17262919131361532,
+    "marketValueUsd": 5.668279496782559e-8,
+    "unrealizedPnlUsd": 2.2241736247810968e-11,
+    "updatedAt": "2026-03-17T23:45:54.740Z"
   }
 ]

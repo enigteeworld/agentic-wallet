@@ -53,6 +53,21 @@ type VaultMetaLike = {
   network?: string;
 };
 
+type VaultSnapshotLike = {
+  vaultId?: string;
+  baseAssetMint?: string;
+  totalValueUsd?: number;
+  availableCapitalUsd?: number;
+  reservedCapitalUsd?: number;
+  deployedCapitalUsd?: number;
+  realizedPnlUsd?: number;
+  unrealizedPnlUsd?: number;
+  grossExposureUsd?: number;
+  netExposureUsd?: number;
+  highWaterMarkUsd?: number;
+  lastSyncAt?: string;
+};
+
 export type AgentTelemetry = {
   agentId: string;
   generatedAt: string;
@@ -152,6 +167,10 @@ function vaultMetaPath(): string {
   return path.join(stateVaultDir(), `ranger-vault-001.meta.json`);
 }
 
+function vaultSnapshotPath(): string {
+  return path.join(stateVaultDir(), `ranger-vault-001.state.json`);
+}
+
 function esc(value: unknown): string {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -165,6 +184,11 @@ function formatUsd(value: number): string {
 
 function formatPct(value: number): string {
   return `${(value * 100).toFixed(2)}%`;
+}
+
+function safeNumber(value: unknown, fallback = 0): number {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
 }
 
 function layoutHtml(params: {
@@ -426,6 +450,60 @@ function reputationHtml(telemetry: AgentTelemetry): string {
   });
 }
 
+function resolvePerformance(params: {
+  performance: PerformanceLike;
+  vaultSnapshot: VaultSnapshotLike;
+}): AgentTelemetry["performance"] {
+  const snapshotNav = safeNumber(params.vaultSnapshot.totalValueUsd, 0);
+  const snapshotAvailable = safeNumber(params.vaultSnapshot.availableCapitalUsd, 0);
+  const snapshotRealized = safeNumber(params.vaultSnapshot.realizedPnlUsd, 0);
+  const snapshotUnrealized = safeNumber(params.vaultSnapshot.unrealizedPnlUsd, 0);
+  const snapshotGrossExposure = safeNumber(params.vaultSnapshot.grossExposureUsd, 0);
+  const snapshotHighWater = safeNumber(params.vaultSnapshot.highWaterMarkUsd, 0);
+
+  const fileNav = safeNumber(params.performance.navUsd, 0);
+  const fileRealized = safeNumber(params.performance.realizedPnlUsd, 0);
+  const fileUnrealized = safeNumber(params.performance.unrealizedPnlUsd, 0);
+  const fileGrossExposure = safeNumber(params.performance.grossExposureUsd, 0);
+  const fileHighWater = safeNumber(params.performance.highWaterMarkUsd, 0);
+  const fileDrawdown = safeNumber(params.performance.drawdownPct, 0);
+  const fileCumulative = safeNumber(params.performance.cumulativeReturnPct, 0);
+  const fileCashPct = safeNumber(params.performance.cashPct, 0);
+
+  const navUsd = snapshotNav > 0 ? snapshotNav : fileNav;
+  const realizedPnlUsd = snapshotRealized !== 0 ? snapshotRealized : fileRealized;
+  const unrealizedPnlUsd = snapshotUnrealized !== 0 ? snapshotUnrealized : fileUnrealized;
+  const grossExposureUsd = snapshotGrossExposure !== 0 ? snapshotGrossExposure : fileGrossExposure;
+  const highWaterMarkUsd = snapshotHighWater > 0 ? snapshotHighWater : fileHighWater;
+
+  const cashPct =
+    navUsd > 0
+      ? snapshotAvailable / navUsd
+      : fileCashPct;
+
+  const drawdownPct =
+    highWaterMarkUsd > 0
+      ? Math.max(0, (highWaterMarkUsd - navUsd) / highWaterMarkUsd)
+      : fileDrawdown;
+
+  const cumulativeReturnPct =
+    highWaterMarkUsd > 0
+      ? (navUsd - highWaterMarkUsd) / highWaterMarkUsd
+      : fileCumulative;
+
+  return {
+    navUsd,
+    realizedPnlUsd,
+    unrealizedPnlUsd,
+    cumulativeReturnPct,
+    drawdownPct,
+    highWaterMarkUsd,
+    grossExposureUsd,
+    cashPct,
+    updatedAt: params.vaultSnapshot.lastSyncAt ?? params.performance.updatedAt,
+  };
+}
+
 export function buildAgentTelemetry(agentId: string): AgentTelemetry {
   const actionLogs = readActionLogs(agentId);
   const recentLogs = readRecentActionLogs(agentId, 25);
@@ -436,6 +514,7 @@ export function buildAgentTelemetry(agentId: string): AgentTelemetry {
   const positions = safeReadJsonFile<PositionLike[]>(positionsPath(agentId), []);
   const performance = safeReadJsonFile<PerformanceLike>(performancePath(agentId), {});
   const vaultMeta = safeReadJsonFile<VaultMetaLike>(vaultMetaPath(), {});
+  const vaultSnapshot = safeReadJsonFile<VaultSnapshotLike>(vaultSnapshotPath(), {});
 
   const buys = trades.filter((trade) => trade.side === "BUY").length;
   const sells = trades.filter((trade) => trade.side === "SELL").length;
@@ -447,6 +526,11 @@ export function buildAgentTelemetry(agentId: string): AgentTelemetry {
     (sum, position) => sum + (Number(position.marketValueUsd ?? 0) || 0),
     0
   );
+
+  const resolvedPerformance = resolvePerformance({
+    performance,
+    vaultSnapshot,
+  });
 
   return {
     agentId,
@@ -466,17 +550,7 @@ export function buildAgentTelemetry(agentId: string): AgentTelemetry {
       uptimeCycles: reputation.uptimeCycles,
       successRatePct,
     },
-    performance: {
-      navUsd: Number(performance.navUsd ?? 0),
-      realizedPnlUsd: Number(performance.realizedPnlUsd ?? 0),
-      unrealizedPnlUsd: Number(performance.unrealizedPnlUsd ?? 0),
-      cumulativeReturnPct: Number(performance.cumulativeReturnPct ?? 0),
-      drawdownPct: Number(performance.drawdownPct ?? 0),
-      highWaterMarkUsd: Number(performance.highWaterMarkUsd ?? 0),
-      grossExposureUsd: Number(performance.grossExposureUsd ?? 0),
-      cashPct: Number(performance.cashPct ?? 0),
-      updatedAt: performance.updatedAt,
-    },
+    performance: resolvedPerformance,
     trades: {
       total: trades.length,
       buys,

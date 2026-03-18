@@ -1,11 +1,11 @@
 {
-  "navUsd": 999.9999975881416,
-  "realizedPnlUsd": 1.3860740740884215e-9,
-  "unrealizedPnlUsd": -0.0000023708789019572748,
-  "cumulativeReturnPct": -2.4118584178722813e-9,
-  "drawdownPct": 2.4118584178722813e-9,
-  "highWaterMarkUsd": 1000,
-  "grossExposureUsd": 0.00006846159952884514,
-  "cashPct": 0.9999999315384003,
-  "updatedAt": "2026-03-17T12:45:19.545Z"
+  "navUsd": 0.8,
+  "realizedPnlUsd": 0,
+  "unrealizedPnlUsd": 2.2241736247810968e-11,
+  "cumulativeReturnPct": 0,
+  "drawdownPct": 0,
+  "highWaterMarkUsd": 0.8,
+  "grossExposureUsd": 5.668279496782559e-8,
+  "cashPct": 0.9999999291465063,
+  "updatedAt": "2026-03-17T23:45:54.741Z"
 }

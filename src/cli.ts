@@ -18,6 +18,7 @@ import {
   writeAgentTelemetryArtifacts,
 } from "./telemetry/report";
 import { serveTelemetry } from "./telemetry/server";
+import { depositToVault } from "./vault/deposit";
 
 const program = new Command();
 
@@ -89,6 +90,26 @@ program
   .option("--agent <id>", "Agent ID", "agent-001")
   .action(async (opts) => {
     await runX402Client({ serverUrl: opts.server, agentId: opts.agent });
+  });
+
+program
+  .command("vault:deposit")
+  .description("Deposit asset tokens into a Ranger vault and receive LP tokens")
+  .requiredOption("--agent <id>", "Agent keystore id (e.g. agent-001)")
+  .requiredOption("--amount <uiAmount>", "Deposit amount in UI units (e.g. 5 or 0.94)")
+  .option(
+    "--mint <pubkey>",
+    "Override vault asset mint (otherwise uses config.vault.assetMint or inferred USDC)",
+  )
+  .action(async (opts) => {
+    const rpcUrl = resolveRpcUrl(program.opts().rpc as string | undefined);
+
+    await depositToVault({
+      agentId: String(opts.agent),
+      rpcUrl,
+      amountUi: String(opts.amount),
+      vaultAssetMint: opts.mint ? String(opts.mint) : undefined,
+    });
   });
 
 program
