@@ -19,6 +19,7 @@ import {
 } from "./telemetry/report";
 import { serveTelemetry } from "./telemetry/server";
 import { depositToVault } from "./vault/deposit";
+import { withdrawFromVault } from "./vault/withdraw";
 
 const program = new Command();
 
@@ -105,6 +106,26 @@ program
     const rpcUrl = resolveRpcUrl(program.opts().rpc as string | undefined);
 
     await depositToVault({
+      agentId: String(opts.agent),
+      rpcUrl,
+      amountUi: String(opts.amount),
+      vaultAssetMint: opts.mint ? String(opts.mint) : undefined,
+    });
+  });
+
+program
+  .command("vault:withdraw")
+  .description("Withdraw asset tokens from a Ranger vault by burning LP tokens")
+  .requiredOption("--agent <id>", "Agent keystore id (e.g. agent-001)")
+  .requiredOption("--amount <uiAmount>", "Withdraw amount in asset UI units (e.g. 5 or 0.5)")
+  .option(
+    "--mint <pubkey>",
+    "Override vault asset mint (otherwise uses config.vault.assetMint or inferred USDC)",
+  )
+  .action(async (opts) => {
+    const rpcUrl = resolveRpcUrl(program.opts().rpc as string | undefined);
+
+    await withdrawFromVault({
       agentId: String(opts.agent),
       rpcUrl,
       amountUi: String(opts.amount),

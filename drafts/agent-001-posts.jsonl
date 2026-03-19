@@ -99,3 +99,5 @@
 {"ts":"2026-03-18T18:05:55.498Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
 {"ts":"2026-03-18T18:24:13.256Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
 {"ts":"2026-03-18T18:54:54.804Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
+{"ts":"2026-03-18T22:05:03.901Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}
+{"ts":"2026-03-18T22:08:52.675Z","agentId":"agent-001","kind":"boot","text":"Corsair Agent is online.\n\nMode: safe\nVersion: 0.1.0\n\nAutonomous checks have started."}

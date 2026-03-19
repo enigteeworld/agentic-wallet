@@ -15,6 +15,7 @@
   "dash:ui": "cd dashboard && npm run dev",
   "dash": "npm run dash:api",
   "deposit": "ts-node src/cli.ts vault:deposit",
+  "withdraw": "ts-node src/cli.ts vault:withdraw",
   "build": "tsc",
   "start": "node dist/index.js"
 },

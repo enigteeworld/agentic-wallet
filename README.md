@@ -1,170 +1,235 @@
-🤖 Agentic Wallets for AI Agents (Solana Devnet)
+🤖 Corsair — Autonomous Financial Agent (Solana)
 
-Autonomous, encrypted, multi-agent wallet infrastructure for Solana AI
-agents.
-
+Autonomous infrastructure for managing on-chain capital through policy, execution, and real-time accounting.
 
 
-  ----------------------
-  🚀 Executive Summary
-  ----------------------
+🚀 Executive Summary
 
-This project is a fully working agentic wallet framework that enables AI
-agents to become autonomous economic actors on Solana Devnet.
+Corsair is an autonomous financial agent that manages on-chain capital through:
 
-Unlike a basic wallet demo, this system implements:
+1. policy-constrained execution
 
-• Programmatic wallet generation per agent • AES‑256‑GCM encrypted
-keystore storage • scrypt-based key derivation • Automatic transaction
-signing (Versioned Transactions) • SOL transfers • SPL token minting and
-transfers • Persistent state management • Multi-agent orchestration
-harness • Jupiter DEX trade execution • On-chain Agent Registry
-(PDA-based proof-of-agent) • Spend guardrails (transfer caps) •
-AI-native HTTP 402 payment engine (x402-style) • Premium React
-observability dashboard
+2. live accounting
 
-The result is a modular, extensible infrastructure layer for AI-native
-finance.
+3. public telemetry
 
-  ------------------------------
-  🏗 Full Architecture Overview
-  ------------------------------
 
-CLI Layer (src/cli.ts - Commander) │ ├── Wallet Manager (Keys + Sign)
-├── Tx Service (Build/Send) ├── Agent Brain (Policy Logic) ├── SPL Token
-Service (Protocol) └── State Store (Persistence)
+CARV-1 (Corsair Autonomous Ranger Vault) is the first deployed strategy module running on this system.
 
-Add-ons: • Guardrails Layer • Jupiter Swap Integration • Agent Registry
-(Anchor program) • x402 Payment Engine • Dashboard API • React Dashboard
-UI
+This is not a trading bot or a passive vault.
 
-Design Principles: - Strict separation of policy, signing, and
-execution - Simulation-first transaction flow - Persistent yet encrypted
-local storage - Horizontal scalability for N agents - Read-only
-observability boundary
+It is a continuous system that:
 
-  ----------------------------
-  🔐 Wallet & Key Management
-  ----------------------------
+evaluates markets
 
-Each agent: • Generates a unique keypair programmatically • Encrypts
-private key using AES‑256‑GCM • Uses scrypt for key derivation • Stores
-encrypted keystore locally • Loads key only when signing is required
+enforces risk constraints
 
-Security Boundaries: - No plaintext private keys stored - Encryption
-passphrase stored in environment - Dashboard is strictly read-only - All
-signing happens in CLI
+executes transactions
 
-  -----------------------------
-  💸 Transaction Capabilities
-  -----------------------------
+updates its own state
 
-SOL Transfers: • Versioned transactions (v0) • Pre-flight simulation •
-Automatic signing • Explorer link output
 
-SPL Token Operations: • Create mint • Create ATA per agent • Mint tokens
-• Transfer tokens • Persistent mint reuse across runs
+🏗 Architecture Overview
 
-All interactions occur live on Solana Devnet.
+Corsair is structured as a modular system:
 
-  -----------------------------------------------
-   🪐 DeFi Trade Execution — Jupiter Integration
-  -----------------------------------------------
+Core Layers:
 
-Agents can: • Fetch live swap quotes (SOL → USDC) • Build serialized
-swap transactions • Sign autonomously • Simulate before execution •
-Optionally execute on mainnet
+Runtime (execution loop)
 
-This proves: • Real DEX liquidity routing • Aggregated trade execution •
-Autonomous transaction signing • Safe simulation-first design
+Strategy modules (e.g. CARV-1)
 
-  ---------------------------------------------
-   🧾 On-Chain Agent Registry (Proof-of-Agent)
-  ---------------------------------------------
+Policy engine (risk constraints)
 
-Anchor program enabling deterministic PDA registration.
+Execution layer (transactions, Jupiter)
 
-Seeds: [“agent”, agent_pubkey]
+Accounting layer (NAV, balances, PnL)
 
-Stored fields: • agent (Pubkey) • registered_at (timestamp) • agent_id
-(string) • version (string)
+Telemetry layer (public state output)
 
-CLI Commands:
 
-Check status: npm run dev – registry:status –agent agent-001
+Frontend:
 
-Register agent: npm run dev – registry:register –agent agent-001
-–agentId agent-001 –version 0.1.0
+Vault interface (deposit / withdraw)
 
-Program ID (devnet): 5ND2gro8VfRE9xASu6zB1FPfKeH3Sf86hgkCkRmjFFBW
+Dashboard (monitoring + metrics)
 
-  -----------------------------------
-  🧠 Agent Brain (Autonomous Logic)
-  -----------------------------------
+Trade logs and transparency layer
 
-Implements rule-based economic behavior: • Maintain minimum token
-balances • Mint when below threshold • Transfer when required
 
-Multi-Agent Simulation: • Configurable agent count • Configurable rounds
-• Deterministic seeding • Cyclical token flows
 
-  ------------------------------
-  🛡 Guardrails (Risk Controls)
-  ------------------------------
+💼 Vault & Capital
 
-• Transfer caps enforced • Simulation before send • Separation between
-policy and signing • Error-safe execution paths
+CARV-1 operates a live on-chain vault:
 
-  ------------------------------------------
-  🌐 AI-Native Payment Engine (x402-style)
-  ------------------------------------------
+Base asset: USDC
 
-HTTP 402 flow: 1. Agent requests protected resource 2. Server responds
-402 with required amount 3. Agent pays on-chain 4. Server verifies
-transaction 5. Resource returned
+Deployed on Ranger
 
-  --------------------------------------------
-  📊 Premium Dashboard (Observability Layer)
-  --------------------------------------------
+LP tokens minted on deposit
 
-React + Vite + Tailwind UI
+Capital tracked continuously
 
-Features: • Live polling • Mint display • Agent balances • ATA
-visibility • Registry verification status • Explorer links
+This vault is actively managed — not passive.
 
-Security: • Read-only API • No private keys exposed
 
-  ----------------------------
-  ⚡ Demo Flow (Recommended)
-  ----------------------------
 
-1.  npm run dev – step3 –amount 0.05
-2.  npm run dev – step4
-3.  npm run dev – step5
-4.  npm run dev – step6 –agents 5 –rounds 3 –seed 25
-5.  npm run x402:server
-6.  npm run x402:client – –server http://localhost:8787 –agent agent-001
-7.  npm run dash:api cd dashboard && npm run dev
+📈 Strategy Behavior (CARV-1)
 
-  --------------------
-  ✅ Judge Checklist
-  --------------------
+The agent continuously:
 
-[x] Programmatic wallet creation [x] Automatic signing [x] SOL support
-[x] SPL token support [x] Protocol interaction [x] Multi-agent
-simulation [x] Jupiter DEX integration [x] Encrypted key management [x]
-On-chain registry proof [x] AI-native payment model [x] Observability
-dashboard [x] Devnet working prototype
+monitors market conditions
 
-  -------------------
-   🏁 Final Thoughts
-  -------------------
+generates signals
 
-This submission demonstrates that AI agents can:
+evaluates execution opportunities
 
-• Hold assets • Make decisions • Execute DeFi trades • Register identity
-on-chain • Transact autonomously • Pay for services • Operate within
-secure boundaries
+Execution only happens if all policy constraints are satisfied.
 
-It is a modular, extensible agent wallet framework designed for future
-production-grade AI finance systems.
+
+
+🛡 Policy & Risk Controls
+
+Every action is validated before execution:
+
+per-trade size limits
+
+maximum exposure caps
+
+drawdown-aware constraints
+
+execution gating (no trade without validation)
+
+Planned improvements:
+
+daily loss limits
+
+cooldown periods
+
+emergency stop conditions
+
+
+
+⚙️ Execution Flow
+
+Each action follows a deterministic loop:
+
+strategy → decision → policy → execution → accounting → telemetry
+
+This ensures:
+
+no arbitrary trades
+
+full traceability
+
+consistent state updates
+
+
+
+🪐 DeFi Execution (Jupiter Integration)
+
+The agent can:
+
+fetch live swap quotes
+
+build swap transactions
+
+sign transactions programmatically
+
+simulate before execution
+
+execute on-chain
+
+This enables real interaction with DeFi liquidity.
+
+
+📊 Accounting & Telemetry
+
+The system continuously updates:
+
+Vault NAV
+
+balances
+
+positions
+
+exposure
+
+drawdown
+
+trade history
+
+All values reflect live state — not simulated data.
+
+
+
+🌐 Frontend (Observability Layer)
+
+Built with React + Tailwind.
+
+Features:
+
+live vault monitoring
+
+performance tracking
+
+strategy transparency
+
+vault identity and structure
+
+deposit / withdraw interface
+
+Security:
+
+read-only for sensitive data
+
+no private keys exposed
+
+⚡ Current Status
+
+Vault deployed and funded
+
+CARV-1 strategy active
+
+trades executing through runtime
+
+live accounting and telemetry
+
+currently operator-assisted
+
+
+
+🔮 Future Direction
+
+fully autonomous execution
+
+multiple agents across strategies
+
+shared capital allocation system
+
+more advanced policy controls
+
+
+
+✅ What This Demonstrates
+
+Corsair shows that AI agents can:
+
+manage capital
+
+enforce risk policies
+
+execute DeFi strategies
+
+maintain real-time accounting
+
+operate transparently
+
+
+🏁 Final Note
+
+Corsair is not just a tool.
+
+It is a system for autonomous capital operating on-chain.
+
+CARV-1 is the first live instance of that system.
