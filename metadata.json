@@ -2,7 +2,7 @@
   "name": "Corsair Arbitrum Agent",
   "description": "Agentic wallet and Arbitrum workflow for reading chain state, balances, and executing actions.",
   "image": "https://placehold.co/512x512/png",
-  "external_url": "https://github.com/enigteeworld/agentic-wallet",
+  "external_url": "https://github.com/enigteeworld/agentic-wallet/tree/feat/ranger-vault-frontend-prep",
   "attributes": [
     {
       "trait_type": "network",

@@ -47,7 +47,7 @@ async function main() {
     functionName: "register",
     args: [
       account.address,
-      "https://corsair-agent.vercel.app/metadata.json",
+      "https://github.com/enigteeworld/agentic-wallet/blob/feat/ranger-vault-frontend-prep/metadata.json",
     ],
   });
 
