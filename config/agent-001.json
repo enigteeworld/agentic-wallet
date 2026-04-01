@@ -41,7 +41,7 @@
     "autoPost": false
   },
   "vault": {
-    "enabled": true,
+    "enabled": false,
     "vaultId": "ranger-vault-001",
     "source": "ranger",
     "rangerVaultPubkey": "EUjtN36p8jwsdghVhK4S3Wp7AU3CYQrhLyww37ZBYi7o",
@@ -49,16 +49,51 @@
     "adminAuthority": "49y7u19MZveazbup6DbbH5QX7EQfFrmur4Kf6LczU4BK",
     "listed": false
   },
+  "managedStrategy": {
+  "enabled": true,
+  "strategyId": "carv-1",
+  "mode": "managed",
+  "baseAsset": "USDC",
+  "depositAsset": "USDC",
+  "depositPolicy": {
+    "sourceWalletRequired": true,
+    "withdrawToSourceWalletOnly": true,
+    "manualDepositConfirmation": true
+  },
+  "withdrawalPolicy": {
+    "allowPartialWithdrawals": true,
+    "queueIfInsufficientLiquidity": true,
+    "manualExecution": true
+  },
+  "accounting": {
+    "shareDecimals": 9,
+    "initialSharePrice": 1
+  },
+  "execution": {
+    "enabled": true,
+    "mode": "simulated",
+    "route": "jupiter",
+    "allowBuy": true,
+    "allowSell": true,
+    "maxLiveNotionalUsd": 5,
+    "minLiveNotionalUsd": 1,
+    "reconcileAfterTrade": true,
+    "maxPriceDeviationPct": 0.01,
+    "maxConsecutiveLosses": 3,
+    "maxCumulativeRealizedLossUsd": 15,
+    "emergencyStop": false
+  }
+},
   "strategy": {
-    "mode": "vault",
+    "mode": "managed",
     "strategyId": "carv-1",
     "baseAsset": "USDC",
     "allowedAssets": ["SOL", "JUP"],
-    "minUsdcReservePct": 0.4,
+    "minUsdcReservePct": 0.25,
     "maxPositionPct": 0.25,
-    "maxTradePct": 0.1,
+    "maxTradePct": 0.15,
     "maxConcurrentPositions": 2,
-    "minConfidence": 0.65,
+    "minConfidence": 0.55,
     "cooldownMinutes": 360,
     "maxDailyTrades": 4,
     "softDrawdownPct": 0.05,

@@ -10,7 +10,7 @@ export function validateIntent(
 ): PolicyDecision {
   const violations: string[] = [];
   const cfg = context.config;
-  const nav = context.vault.totalValueUsd;
+  const nav = context.portfolio.totalValueUsd;
 
   if (intent.action === "HOLD") {
     return { approved: true, reason: "No action requested" };
@@ -20,7 +20,10 @@ export function validateIntent(
     violations.push("confidence_below_threshold");
   }
 
-  if (context.vault.drawdownPct >= cfg.hardDrawdownPct && intent.action === "BUY") {
+  if (
+    context.portfolio.drawdownPct >= cfg.hardDrawdownPct &&
+    intent.action === "BUY"
+  ) {
     violations.push("hard_drawdown_lock");
   }
 
@@ -35,7 +38,10 @@ export function validateIntent(
   }
 
   const reserveUsd = nav * cfg.minUsdcReservePct;
-  if (intent.action === "BUY" && context.vault.availableCapitalUsd <= reserveUsd) {
+  if (
+    intent.action === "BUY" &&
+    context.portfolio.availableCapitalUsd <= reserveUsd
+  ) {
     violations.push("reserve_protection_active");
   }
 

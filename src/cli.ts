@@ -7,7 +7,10 @@ import { runStep5 } from "./demos/step5";
 import { runStep6 } from "./demos/step6";
 import { runX402Client } from "./addons/x402/client";
 import { WalletManager } from "./wallet/walletManager";
-import { isAgentRegistered, registerAgentOnChain } from "./registry/agentRegistry";
+import {
+  isAgentRegistered,
+  registerAgentOnChain,
+} from "./registry/agentRegistry";
 import { runAgentRuntime } from "./agent/runtime";
 import { getAgentStatus, agentStatusFilesExist } from "./agent/status";
 import { postLatestDraft, postTextToX } from "./agent/xPoster";
@@ -20,6 +23,13 @@ import {
 import { serveTelemetry } from "./telemetry/server";
 import { depositToVault } from "./vault/deposit";
 import { withdrawFromVault } from "./vault/withdraw";
+import { createManagedStrategyRuntime } from "./strategy/managed";
+import {
+  getManagedOverviewStatus,
+  getManagedPositionsStatus,
+  getManagedTradesStatus,
+  getManagedWalletPositionStatus,
+} from "./strategy/managed/status";
 
 const program = new Command();
 
@@ -100,7 +110,7 @@ program
   .requiredOption("--amount <uiAmount>", "Deposit amount in UI units (e.g. 5 or 0.94)")
   .option(
     "--mint <pubkey>",
-    "Override vault asset mint (otherwise uses config.vault.assetMint or inferred USDC)",
+    "Override vault asset mint (otherwise uses config.vault.assetMint or inferred USDC)"
   )
   .action(async (opts) => {
     const rpcUrl = resolveRpcUrl(program.opts().rpc as string | undefined);
@@ -120,7 +130,7 @@ program
   .requiredOption("--amount <uiAmount>", "Withdraw amount in asset UI units (e.g. 5 or 0.5)")
   .option(
     "--mint <pubkey>",
-    "Override vault asset mint (otherwise uses config.vault.assetMint or inferred USDC)",
+    "Override vault asset mint (otherwise uses config.vault.assetMint or inferred USDC)"
   )
   .action(async (opts) => {
     const rpcUrl = resolveRpcUrl(program.opts().rpc as string | undefined);
@@ -131,6 +141,348 @@ program
       amountUi: String(opts.amount),
       vaultAssetMint: opts.mint ? String(opts.mint) : undefined,
     });
+  });
+
+// =============================
+// MANAGED STRATEGY COMMANDS
+// =============================
+
+program
+  .command("managed:overview")
+  .description("Show managed strategy overview")
+  .requiredOption("--agent <id>", "Agent id")
+  .action(async (opts) => {
+    const overview = getManagedOverviewStatus();
+
+    console.log("\n-- Managed Strategy Overview");
+    console.log(`Agent:                  ${String(opts.agent)}`);
+    console.log(`Total Users:            ${overview.totalUsers}`);
+    console.log(`Total Deposited:        ${overview.totalDeposited}`);
+    console.log(`Total Withdrawn:        ${overview.totalWithdrawn}`);
+    console.log(`Total Shares:           ${overview.totalShares}`);
+    console.log(`Total Value:            ${overview.totalValue}`);
+    console.log(`Liquid Value:           ${overview.liquidValue}`);
+    console.log(`Invested Value:         ${overview.investedValue}`);
+    console.log(`Reserved Withdrawals:   ${overview.reservedForWithdrawals}`);
+    console.log(`Share Price:            ${overview.sharePrice}`);
+    console.log(`Pending Withdrawal Amt: ${overview.pendingWithdrawalAmount}`);
+    console.log(`Pending Withdrawal Cnt: ${overview.pendingWithdrawalCount}`);
+    console.log(`Updated At:             ${overview.updatedAt}`);
+  });
+
+program
+  .command("managed:positions")
+  .description("Show managed market positions")
+  .requiredOption("--agent <id>", "Agent id")
+  .action(async (opts) => {
+    const rows = getManagedPositionsStatus(String(opts.agent));
+
+    console.log("\n-- Managed Market Positions");
+
+    if (rows.length === 0) {
+      console.log("No managed positions found.");
+      return;
+    }
+
+    rows.forEach((row, index) => {
+      console.log(`\n[${index + 1}] ${row.symbol}`);
+      console.log(`Mint:             ${row.mint}`);
+      console.log(`Quantity:         ${row.quantity}`);
+      console.log(`Avg Entry USD:    ${row.avgEntryPriceUsd}`);
+      console.log(`Current Price USD:${row.currentPriceUsd}`);
+      console.log(`Market Value USD: ${row.marketValueUsd}`);
+      console.log(`Unrealized PnL:   ${row.unrealizedPnlUsd}`);
+      console.log(`Updated At:       ${row.updatedAt}`);
+    });
+  });
+
+program
+  .command("managed:trades")
+  .description("Show recent managed market trades")
+  .requiredOption("--agent <id>", "Agent id")
+  .option("--limit <n>", "Number of recent trades", "10")
+  .action(async (opts) => {
+    const rows = getManagedTradesStatus(String(opts.agent), Number(opts.limit));
+
+    console.log("\n-- Managed Market Trades");
+
+    if (rows.length === 0) {
+      console.log("No managed trades found.");
+      return;
+    }
+
+    rows.forEach((row, index) => {
+      console.log(`\n[${index + 1}] ${row.side} ${row.outputMint}`);
+      console.log(`ID:               ${row.id}`);
+      console.log(`Timestamp:        ${row.timestamp}`);
+      console.log(`Input Mint:       ${row.inputMint}`);
+      console.log(`Output Mint:      ${row.outputMint}`);
+      console.log(`Input Amount:     ${row.inputAmount}`);
+      console.log(`Output Amount:    ${row.outputAmount}`);
+      console.log(`Execution USD:    ${row.executionPriceUsd}`);
+      console.log(`Fees USD:         ${row.feesUsd}`);
+      console.log(`Slippage Bps:     ${row.slippageBps}`);
+      console.log(`Tx Signature:     ${row.txSignature}`);
+      console.log(`Reason:           ${row.strategyReason}`);
+      console.log(`Realized PnL USD: ${row.realizedPnlUsd ?? 0}`);
+    });
+  });
+
+program
+  .command("managed:position")
+  .description("Show a wallet's managed strategy position")
+  .requiredOption("--agent <id>", "Agent id")
+  .requiredOption("--wallet <address>", "User wallet address")
+  .action(async (opts) => {
+    const position = getManagedWalletPositionStatus(String(opts.wallet));
+
+    if (!position) {
+      console.log(`No managed position found for wallet ${opts.wallet}`);
+      return;
+    }
+
+    console.log("\n-- Managed Strategy Position");
+    console.log(`Agent:                  ${String(opts.agent)}`);
+    console.log(`Wallet:                 ${position.wallet}`);
+    console.log(`Shares:                 ${position.shares}`);
+    console.log(`Share Price:            ${position.sharePrice}`);
+    console.log(`Current Value:          ${position.currentValue}`);
+    console.log(`Total Deposited:        ${position.totalDeposited}`);
+    console.log(`Total Withdrawn:        ${position.totalWithdrawn}`);
+    console.log(`Net Deposited:          ${position.netDeposited}`);
+    console.log(`PnL Absolute:           ${position.pnlAbsolute}`);
+    console.log(`PnL Percent:            ${position.pnlPercent}%`);
+    console.log(`Pending Withdrawal Amt: ${position.pendingWithdrawalAmount}`);
+    console.log(`Pending Withdrawal Shr: ${position.pendingWithdrawalShares}`);
+    console.log(`Created At:             ${position.createdAt ?? "-"}`);
+    console.log(`Updated At:             ${position.updatedAt ?? "-"}`);
+  });
+
+program
+  .command("managed:deposit")
+  .description("Register a managed strategy deposit for a wallet")
+  .requiredOption("--agent <id>", "Agent id (currently informational)")
+  .requiredOption("--wallet <address>", "User wallet address")
+  .requiredOption("--amount <uiAmount>", "Deposit amount in UI units")
+  .option("--tx <hash>", "Deposit transaction hash")
+  .option("--notes <text>", "Optional notes")
+  .action(async (opts) => {
+    const runtime = createManagedStrategyRuntime();
+
+    const result = runtime.registerDeposit({
+      wallet: String(opts.wallet),
+      amount: Number(opts.amount),
+      txHash: opts.tx ? String(opts.tx) : undefined,
+      notes: opts.notes ? String(opts.notes) : undefined,
+    });
+
+    console.log("\n-- Managed Deposit Registered");
+    console.log(`Wallet:                ${result.wallet}`);
+    console.log(`Amount:                ${result.amount}`);
+    console.log(`Minted Shares:         ${result.mintedShares}`);
+    console.log(`Share Price:           ${result.sharePrice}`);
+    console.log(`User Total Shares:     ${result.totalUserShares}`);
+    console.log(`Strategy Total Shares: ${result.totalStrategyShares}`);
+    console.log(`Strategy Total Value:  ${result.totalStrategyValue}`);
+    console.log(`Liquid Value:          ${result.liquidValue}`);
+    console.log(`Invested Value:        ${result.investedValue}`);
+    console.log(`Tx Hash:               ${result.txHash ?? "-"}`);
+    console.log(`Notes:                 ${result.notes ?? "-"}`);
+    console.log(`Created At:            ${result.createdAt}`);
+  });
+
+program
+  .command("managed:withdraw")
+  .description("Request a managed strategy withdrawal by amount")
+  .requiredOption("--agent <id>", "Agent id (currently informational)")
+  .requiredOption("--wallet <address>", "User wallet address")
+  .requiredOption("--amount <uiAmount>", "Withdrawal amount in UI units")
+  .option("--destination <address>", "Destination wallet (defaults to source wallet)")
+  .action(async (opts) => {
+    const runtime = createManagedStrategyRuntime();
+
+    const result = runtime.requestWithdrawalByAmount({
+      wallet: String(opts.wallet),
+      amount: Number(opts.amount),
+      destinationWallet: opts.destination ? String(opts.destination) : undefined,
+    });
+
+    console.log("\n-- Managed Withdrawal Requested");
+    console.log(`Request ID:           ${result.request.id}`);
+    console.log(`Wallet:               ${result.request.wallet}`);
+    console.log(`Destination Wallet:   ${result.request.destinationWallet}`);
+    console.log(`Requested Amount:     ${result.request.requestedAmount ?? "-"}`);
+    console.log(`Reserved Amount:      ${result.request.reservedAmount}`);
+    console.log(`Reserved Shares:      ${result.request.reservedShares}`);
+    console.log(`Status:               ${result.request.status}`);
+    console.log(`Reserved Withdrawals: ${result.reservedForWithdrawals}`);
+    console.log(`Liquid Value:         ${result.liquidValue}`);
+    console.log(`Invested Value:       ${result.investedValue}`);
+    console.log(`Total Strategy Value: ${result.totalStrategyValue}`);
+    console.log(`Created At:           ${result.request.createdAt}`);
+  });
+
+program
+  .command("managed:withdraw-shares")
+  .description("Request a managed strategy withdrawal by shares")
+  .requiredOption("--agent <id>", "Agent id (currently informational)")
+  .requiredOption("--wallet <address>", "User wallet address")
+  .requiredOption("--shares <amount>", "Number of shares to redeem")
+  .option("--destination <address>", "Destination wallet (defaults to source wallet)")
+  .action(async (opts) => {
+    const runtime = createManagedStrategyRuntime();
+
+    const result = runtime.requestWithdrawalByShares({
+      wallet: String(opts.wallet),
+      shares: Number(opts.shares),
+      destinationWallet: opts.destination ? String(opts.destination) : undefined,
+    });
+
+    console.log("\n-- Managed Withdrawal Requested By Shares");
+    console.log(`Request ID:           ${result.request.id}`);
+    console.log(`Wallet:               ${result.request.wallet}`);
+    console.log(`Destination Wallet:   ${result.request.destinationWallet}`);
+    console.log(`Requested Shares:     ${result.request.requestedShares ?? "-"}`);
+    console.log(`Reserved Amount:      ${result.request.reservedAmount}`);
+    console.log(`Reserved Shares:      ${result.request.reservedShares}`);
+    console.log(`Status:               ${result.request.status}`);
+    console.log(`Reserved Withdrawals: ${result.reservedForWithdrawals}`);
+    console.log(`Liquid Value:         ${result.liquidValue}`);
+    console.log(`Invested Value:       ${result.investedValue}`);
+    console.log(`Total Strategy Value: ${result.totalStrategyValue}`);
+    console.log(`Created At:           ${result.request.createdAt}`);
+  });
+
+program
+  .command("managed:withdraw-complete")
+  .description("Complete a managed withdrawal request after funds are sent/unwound")
+  .requiredOption("--agent <id>", "Agent id (currently informational)")
+  .requiredOption("--request <id>", "Withdrawal request id")
+  .option("--tx <hash>", "Withdrawal transaction hash")
+  .action(async (opts) => {
+    const runtime = createManagedStrategyRuntime();
+
+    const result = runtime.completeWithdrawal({
+      requestId: String(opts.request),
+      txHash: opts.tx ? String(opts.tx) : undefined,
+    });
+
+    console.log("\n-- Managed Withdrawal Completed");
+    console.log(`Request ID:         ${result.id}`);
+    console.log(`Wallet:             ${result.wallet}`);
+    console.log(`Destination Wallet: ${result.destinationWallet}`);
+    console.log(`Reserved Amount:    ${result.reservedAmount}`);
+    console.log(`Reserved Shares:    ${result.reservedShares}`);
+    console.log(`Status:             ${result.status}`);
+    console.log(`Tx Hash:            ${result.txHash ?? "-"}`);
+    console.log(`Updated At:         ${result.updatedAt}`);
+  });
+
+program
+  .command("managed:withdraw-reject")
+  .description("Reject a managed withdrawal request")
+  .requiredOption("--agent <id>", "Agent id (currently informational)")
+  .requiredOption("--request <id>", "Withdrawal request id")
+  .requiredOption("--reason <text>", "Reason for rejection")
+  .action(async (opts) => {
+    const runtime = createManagedStrategyRuntime();
+
+    const result = runtime.rejectWithdrawal(
+      String(opts.request),
+      String(opts.reason)
+    );
+
+    console.log("\n-- Managed Withdrawal Rejected");
+    console.log(`Request ID:         ${result.id}`);
+    console.log(`Wallet:             ${result.wallet}`);
+    console.log(`Destination Wallet: ${result.destinationWallet}`);
+    console.log(`Status:             ${result.status}`);
+    console.log(`Reason:             ${result.reason ?? "-"}`);
+    console.log(`Updated At:         ${result.updatedAt}`);
+  });
+
+program
+  .command("managed:deploy")
+  .description("Move capital from liquid to invested")
+  .requiredOption("--agent <id>", "Agent id (currently informational)")
+  .requiredOption("--amount <uiAmount>", "Amount to deploy")
+  .option("--reason <text>", "Optional reason")
+  .action(async (opts) => {
+    const runtime = createManagedStrategyRuntime();
+
+    const result = runtime.deployCapital({
+      amount: Number(opts.amount),
+      reason: opts.reason ? String(opts.reason) : undefined,
+    });
+
+    console.log("\n-- Managed Capital Deployed");
+    console.log(`Total Value:            ${result.totalValue}`);
+    console.log(`Liquid Value:           ${result.liquidValue}`);
+    console.log(`Invested Value:         ${result.investedValue}`);
+    console.log(`Reserved Withdrawals:   ${result.reservedForWithdrawals}`);
+    console.log(`Share Price:            ${result.sharePrice}`);
+    console.log(`Reason:                 ${result.reason ?? "-"}`);
+    console.log(`Updated At:             ${result.updatedAt}`);
+  });
+
+program
+  .command("managed:return")
+  .description("Move capital from invested back to liquid")
+  .requiredOption("--agent <id>", "Agent id (currently informational)")
+  .requiredOption("--amount <uiAmount>", "Amount to return")
+  .option("--reason <text>", "Optional reason")
+  .action(async (opts) => {
+    const runtime = createManagedStrategyRuntime();
+
+    const result = runtime.returnCapital({
+      amount: Number(opts.amount),
+      reason: opts.reason ? String(opts.reason) : undefined,
+    });
+
+    console.log("\n-- Managed Capital Returned");
+    console.log(`Total Value:            ${result.totalValue}`);
+    console.log(`Liquid Value:           ${result.liquidValue}`);
+    console.log(`Invested Value:         ${result.investedValue}`);
+    console.log(`Reserved Withdrawals:   ${result.reservedForWithdrawals}`);
+    console.log(`Share Price:            ${result.sharePrice}`);
+    console.log(`Reason:                 ${result.reason ?? "-"}`);
+    console.log(`Updated At:             ${result.updatedAt}`);
+  });
+
+program
+  .command("managed:reconcile")
+  .description("Reconcile managed NAV from actual runtime balances")
+  .requiredOption("--agent <id>", "Agent id (currently informational)")
+  .requiredOption("--liquid <uiAmount>", "Actual liquid value")
+  .requiredOption("--invested <uiAmount>", "Actual invested value")
+  .option("--reserved <uiAmount>", "Reserved withdrawals amount", "0")
+  .option("--source <name>", "Source label for reconciliation")
+  .option("--notes <text>", "Optional notes")
+  .action(async (opts) => {
+    const runtime = createManagedStrategyRuntime();
+
+    const result = runtime.reconcileNav({
+      liquidValue: Number(opts.liquid),
+      investedValue: Number(opts.invested),
+      reservedForWithdrawals: Number(opts.reserved),
+      source: opts.source ? String(opts.source) : undefined,
+      notes: opts.notes ? String(opts.notes) : undefined,
+    });
+
+    console.log("\n-- Managed NAV Reconciled");
+    console.log(`Previous Total Value:          ${result.previousTotalValue}`);
+    console.log(`Next Total Value:              ${result.nextTotalValue}`);
+    console.log(`Previous Liquid Value:         ${result.previousLiquidValue}`);
+    console.log(`Next Liquid Value:             ${result.nextLiquidValue}`);
+    console.log(`Previous Invested Value:       ${result.previousInvestedValue}`);
+    console.log(`Next Invested Value:           ${result.nextInvestedValue}`);
+    console.log(`Previous Reserved Withdrawals: ${result.previousReservedForWithdrawals}`);
+    console.log(`Next Reserved Withdrawals:     ${result.nextReservedForWithdrawals}`);
+    console.log(`PnL Delta:                     ${result.pnlDelta}`);
+    console.log(`Share Price:                   ${result.sharePrice}`);
+    console.log(`Source:                        ${result.source ?? "-"}`);
+    console.log(`Notes:                         ${result.notes ?? "-"}`);
+    console.log(`Updated At:                    ${result.updatedAt}`);
   });
 
 program

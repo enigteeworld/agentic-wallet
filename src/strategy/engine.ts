@@ -12,10 +12,7 @@ function findPositionForSignal(
   positions: PositionRecord[]
 ): PositionRecord | undefined {
   return positions.find((position) => {
-    return (
-      position.symbol === signal.symbol ||
-      position.mint === signal.mint
-    );
+    return position.symbol === signal.symbol || position.mint === signal.mint;
   });
 }
 
@@ -32,9 +29,10 @@ function findTopBearishExitCandidate(
       signal,
       position: findPositionForSignal(signal, context.openPositions),
     }))
-    .filter((item): item is { signal: SignalResult; position: PositionRecord } => {
-      return Boolean(item.position);
-    })
+    .filter(
+      (item): item is { signal: SignalResult; position: PositionRecord } =>
+        Boolean(item.position)
+    )
     .filter((item) => item.signal.direction === "BEARISH")
     .sort((a, b) => {
       const aScore = a.position.marketValueUsd * (1 - a.signal.score);
@@ -46,7 +44,7 @@ function findTopBearishExitCandidate(
 }
 
 function findTopBullishEntrySignal(
-  context: StrategyContext,
+  _context: StrategyContext,
   signals: SignalResult[]
 ): SignalResult | undefined {
   return [...signals]
@@ -57,7 +55,7 @@ function findTopBullishEntrySignal(
 export async function generateIntent(
   context: StrategyContext
 ): Promise<StrategyIntent> {
-  if (context.vault.drawdownPct >= context.config.hardDrawdownPct) {
+  if (context.portfolio.drawdownPct >= context.config.hardDrawdownPct) {
     const largestPosition = [...context.openPositions].sort(
       (a, b) => b.marketValueUsd - a.marketValueUsd
     )[0];

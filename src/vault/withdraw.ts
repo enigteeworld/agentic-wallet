@@ -10,9 +10,7 @@ import {
 } from "@solana/web3.js";
 import {
   TOKEN_PROGRAM_ID,
-  getAssociatedTokenAddressSync,
   getMint,
-  getOrCreateAssociatedTokenAccount,
 } from "@solana/spl-token";
 import { VoltrClient } from "@voltr/vault-sdk";
 import { WalletManager } from "../wallet/walletManager";
@@ -34,6 +32,8 @@ export type WithdrawFromVaultParams = {
   rpcUrl: string;
   amountUi: string;
   vaultAssetMint?: string;
+  isAmountInLp?: boolean;
+  isWithdrawAll?: boolean;
 };
 
 function loadAgentConfig(agentId: string): AgentConfig {
@@ -100,6 +100,8 @@ export async function withdrawFromVault({
   rpcUrl,
   amountUi,
   vaultAssetMint: vaultAssetMintOverride,
+  isAmountInLp = false,
+  isWithdrawAll = false,
 }: WithdrawFromVaultParams): Promise<void> {
   const connection = new Connection(rpcUrl, "confirmed");
   const walletManager = new WalletManager(connection);
@@ -112,10 +114,11 @@ export async function withdrawFromVault({
   }
 
   const vault = requireVaultPubkey(config, agentId);
-  const vaultAssetMint = resolveVaultAssetMint(
-    config,
-    vaultAssetMintOverride,
-  );
+  const vaultAssetMint = resolveVaultAssetMint(config, vaultAssetMintOverride);
+
+  const client = new VoltrClient(connection);
+
+  const { vaultLpMint } = client.findVaultAddresses(vault);
 
   const assetMintInfo = await getMint(
     connection,
@@ -124,20 +127,6 @@ export async function withdrawFromVault({
     TOKEN_PROGRAM_ID,
   );
 
-  const amountBaseUnits = uiToBaseUnits(amountUi, assetMintInfo.decimals);
-
-  if (amountBaseUnits <= BigInt(0)) {
-    throw new Error("Withdraw amount must be greater than 0");
-  }
-
-  const client = new VoltrClient(connection);
-  const amountBn = new BN(amountBaseUnits.toString());
-
-  const {
-    vaultLpMint,
-    vaultAssetIdleAuth,
-  } = client.findVaultAddresses(vault);
-
   const lpMintInfo = await getMint(
     connection,
     vaultLpMint,
@@ -145,34 +134,14 @@ export async function withdrawFromVault({
     TOKEN_PROGRAM_ID,
   );
 
-  const userAssetAta = await getOrCreateAssociatedTokenAccount(
-    connection,
-    wallet,
-    vaultAssetMint,
-    wallet.publicKey,
-    false,
-    "confirmed",
-    { commitment: "confirmed" },
-    TOKEN_PROGRAM_ID,
-  );
+  const decimals = isAmountInLp ? lpMintInfo.decimals : assetMintInfo.decimals;
+  const amountBaseUnits = uiToBaseUnits(amountUi, decimals);
 
-  const userLpAta = await getOrCreateAssociatedTokenAccount(
-    connection,
-    wallet,
-    vaultLpMint,
-    wallet.publicKey,
-    false,
-    "confirmed",
-    { commitment: "confirmed" },
-    TOKEN_PROGRAM_ID,
-  );
+  if (!isWithdrawAll && amountBaseUnits <= BigInt(0)) {
+    throw new Error("Withdraw amount must be greater than 0");
+  }
 
-  const vaultAssetIdleAta = getAssociatedTokenAddressSync(
-    vaultAssetMint,
-    vaultAssetIdleAuth,
-    true,
-    TOKEN_PROGRAM_ID,
-  );
+  const amountBn = new BN(amountBaseUnits.toString());
 
   console.log("\n-- Ranger Vault Withdraw");
   console.log(`Agent: ${agentId}`);
@@ -181,30 +150,26 @@ export async function withdrawFromVault({
   console.log(`Vault: ${vault.toBase58()}`);
   console.log(`Vault asset mint: ${vaultAssetMint.toBase58()}`);
   console.log(`Vault LP mint: ${vaultLpMint.toBase58()}`);
-  console.log(`Amount UI (asset): ${amountUi}`);
-  console.log(`Amount base units (asset): ${amountBaseUnits.toString()}`);
+  console.log(`Amount UI: ${amountUi}`);
+  console.log(`Amount base units: ${amountBaseUnits.toString()}`);
+  console.log(`Interpret amount as: ${isAmountInLp ? "LP" : "asset"}`);
+  console.log(`Withdraw all: ${isWithdrawAll ? "yes" : "no"}`);
   console.log(`Asset decimals: ${assetMintInfo.decimals}`);
   console.log(`LP decimals: ${lpMintInfo.decimals}`);
-  console.log(`User asset ATA: ${userAssetAta.address.toBase58()}`);
-  console.log(`User LP ATA: ${userLpAta.address.toBase58()}`);
-  console.log(`Vault asset idle auth: ${vaultAssetIdleAuth.toBase58()}`);
-  console.log(`Vault asset idle ATA: ${vaultAssetIdleAta.toBase58()}`);
 
-  const withdrawIx = await (client as any).createWithdrawVaultIx(amountBn, {
-  userTransferAuthority: wallet.publicKey,
-
-  vault,
-  vaultLpMint,
-
-  // 🔑 correct naming
-  userLpTokenAccount: userLpAta.address,
-  userAssetTokenAccount: userAssetAta.address,
-
-  vaultAssetTokenAccount: vaultAssetIdleAta,
-  vaultAssetIdleAuth,
-
-  assetTokenProgram: TOKEN_PROGRAM_ID,
-});
+  const withdrawIx = await client.createInstantWithdrawVaultIx(
+    {
+      amount: amountBn,
+      isAmountInLp,
+      isWithdrawAll,
+    },
+    {
+      userTransferAuthority: wallet.publicKey,
+      vault,
+      vaultAssetMint,
+      assetTokenProgram: TOKEN_PROGRAM_ID,
+    },
+  );
 
   const tx = new Transaction().add(withdrawIx);
   tx.feePayer = wallet.publicKey;

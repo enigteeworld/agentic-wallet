@@ -1,14 +1,14 @@
 {
   "vaultId": "ranger-vault-001",
   "baseAssetMint": "USDC",
-  "totalValueUsd": 0.8000000566827951,
-  "availableCapitalUsd": 0.8,
-  "reservedCapitalUsd": 0.32000002267311806,
+  "totalValueUsd": 0.750000056682795,
+  "availableCapitalUsd": 0.75,
+  "reservedCapitalUsd": 0.30000002267311804,
   "deployedCapitalUsd": 5.668279496782559e-8,
   "realizedPnlUsd": 0,
   "unrealizedPnlUsd": 2.2241736247810968e-11,
   "grossExposureUsd": 5.668279496782559e-8,
   "netExposureUsd": 5.668279496782559e-8,
   "highWaterMarkUsd": 0.8000000566827951,
-  "lastSyncAt": "2026-03-18T22:54:22.205Z"
+  "lastSyncAt": "2026-03-19T11:51:06.613Z"
 }

@@ -1,9 +1,9 @@
 import type {
   ExecutionResult,
   PerformanceSnapshot,
+  PortfolioState,
   PositionRecord,
   TradeRecord,
-  VaultState,
 } from "./types";
 
 function nowIso(): string {
@@ -187,7 +187,7 @@ export function refreshPositionsWithPrices(params: {
 }
 
 export function buildPerformanceSnapshot(params: {
-  vaultState: VaultState;
+  portfolioState: PortfolioState;
   positions: PositionRecord[];
 }): PerformanceSnapshot {
   const grossExposureUsd = params.positions.reduce(
@@ -200,24 +200,24 @@ export function buildPerformanceSnapshot(params: {
     0
   );
 
-  const navUsd = params.vaultState.totalValueUsd;
+  const navUsd = params.portfolioState.totalValueUsd;
 
   const cumulativeReturnPct =
-    params.vaultState.highWaterMarkUsd > 0
-      ? (navUsd - params.vaultState.highWaterMarkUsd) /
-        params.vaultState.highWaterMarkUsd
+    params.portfolioState.highWaterMarkUsd > 0
+      ? (navUsd - params.portfolioState.highWaterMarkUsd) /
+        params.portfolioState.highWaterMarkUsd
       : 0;
 
   const cashPct =
-    navUsd > 0 ? params.vaultState.availableCapitalUsd / navUsd : 1;
+    navUsd > 0 ? params.portfolioState.availableCapitalUsd / navUsd : 1;
 
   return {
     navUsd,
-    realizedPnlUsd: params.vaultState.realizedPnlUsd,
+    realizedPnlUsd: params.portfolioState.realizedPnlUsd,
     unrealizedPnlUsd,
     cumulativeReturnPct,
-    drawdownPct: params.vaultState.drawdownPct,
-    highWaterMarkUsd: params.vaultState.highWaterMarkUsd,
+    drawdownPct: params.portfolioState.drawdownPct,
+    highWaterMarkUsd: params.portfolioState.highWaterMarkUsd,
     grossExposureUsd,
     cashPct,
     updatedAt: nowIso(),

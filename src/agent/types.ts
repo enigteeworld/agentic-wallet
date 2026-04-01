@@ -10,7 +10,15 @@ export type AgentActionType =
   | "draft_post"
   | "x_post"
   | "vault_cycle"
-  | "vault_skip_execution" // ✅ added
+  | "vault_skip_execution"
+  | "managed_cycle"
+  | "managed_live_buy"
+  | "managed_live_sell"
+  | "managed_circuit_breaker"
+  | "managed_deposit"
+  | "managed_withdraw_request"
+  | "managed_withdraw_complete"
+  | "managed_reconcile"
   | "summary"
   | "error"
   | "noop";
@@ -25,8 +33,48 @@ export type VaultConfig = {
   listed?: boolean;
 };
 
+export type ManagedStrategyExecutionConfig = {
+  enabled: boolean;
+  mode: "simulated" | "live";
+  route: "jupiter";
+  allowBuy: boolean;
+  allowSell: boolean;
+  maxLiveNotionalUsd: number;
+  minLiveNotionalUsd: number;
+  reconcileAfterTrade: boolean;
+  maxPriceDeviationPct: number;
+  maxConsecutiveLosses: number;
+  maxCumulativeRealizedLossUsd: number;
+  emergencyStop: boolean;
+};
+
+export type ManagedStrategyConfig = {
+  enabled: boolean;
+  strategyId: string;
+  mode: "managed";
+  baseAsset: string;
+  depositAsset: string;
+  depositPolicy: {
+    sourceWalletRequired: boolean;
+    withdrawToSourceWalletOnly: boolean;
+    manualDepositConfirmation: boolean;
+  };
+  withdrawalPolicy: {
+    allowPartialWithdrawals: boolean;
+    queueIfInsufficientLiquidity: boolean;
+    manualExecution: boolean;
+  };
+  accounting: {
+    shareDecimals: number;
+    initialSharePrice: number;
+  };
+  execution?: ManagedStrategyExecutionConfig;
+};
+
+export type StrategyRuntimeMode = "vault" | "managed";
+
 export type StrategyRuntimeConfig = {
-  mode: "vault";
+  mode: StrategyRuntimeMode;
   strategyId: string;
   baseAsset: string;
   allowedAssets: string[];
@@ -85,6 +133,7 @@ export type AgentConfig = {
     autoPost: boolean;
   };
   vault?: VaultConfig;
+  managedStrategy?: ManagedStrategyConfig;
   strategy?: StrategyRuntimeConfig;
 };
 

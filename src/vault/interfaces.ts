@@ -1,7 +1,7 @@
 import type {
   ExecutionResult,
   PerformanceSnapshot,
-  VaultState,
+  PortfolioState,
 } from "../strategy/types";
 
 export type VaultIdentity = {
@@ -16,7 +16,7 @@ export type VaultIdentity = {
 
 export interface VaultAdapter {
   getVaultIdentity(): Promise<VaultIdentity>;
-  getVaultState(): Promise<VaultState>;
+  getVaultState(): Promise<PortfolioState>;
   getDeployableCapitalUsd(): Promise<number>;
   getBaseAssetMint(): Promise<string>;
   recordExecution(result: ExecutionResult): Promise<void>;

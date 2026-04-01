@@ -1,7 +1,7 @@
 export type StrategyAction = "BUY" | "SELL" | "REBALANCE" | "HOLD";
 
-export type VaultState = {
-  vaultId: string;
+export type PortfolioState = {
+  portfolioId: string;
   totalValueUsd: number;
   availableCapitalUsd: number;
   reservedCapitalUsd: number;
@@ -80,9 +80,10 @@ export type PerformanceSnapshot = {
 };
 
 export type StrategyConfig = {
-  mode: "vault";
+  mode: "vault" | "managed";
   strategyId: string;
-  vaultId: string;
+  portfolioId?: string;
+  vaultId?: string;
   baseAssetMint: string;
   allowedAssets: string[];
   minUsdcReservePct: number;
@@ -99,7 +100,7 @@ export type StrategyConfig = {
 
 export type StrategyContext = {
   agentId: string;
-  vault: VaultState;
+  portfolio: PortfolioState;
   balances: BalanceSnapshot[];
   prices: Record<string, number>;
   recentTrades: TradeRecord[];

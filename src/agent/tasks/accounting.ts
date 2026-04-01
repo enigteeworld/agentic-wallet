@@ -10,9 +10,9 @@ import {
 import type {
   ExecutionResult,
   PerformanceSnapshot,
+  PortfolioState,
   PositionRecord,
   TradeRecord,
-  VaultState,
 } from "../../strategy/types";
 
 const MINT_TO_SYMBOL: Record<string, string> = {
@@ -95,7 +95,7 @@ export function saveAccountingState(params: {
 export function updateAccountingFromExecution(params: {
   agentId: string;
   execution: ExecutionResult;
-  vaultState: VaultState;
+  portfolioState: PortfolioState;
   prices?: Record<string, number>;
   reason: string;
   side: "BUY" | "SELL";
@@ -164,21 +164,21 @@ export function updateAccountingFromExecution(params: {
 
   const availableCapitalUsd = Math.max(
     0,
-    params.vaultState.totalValueUsd - grossExposureUsd
+    params.portfolioState.totalValueUsd - grossExposureUsd
   );
 
-  const nextVaultState: VaultState = {
-    ...params.vaultState,
+  const nextPortfolioState: PortfolioState = {
+    ...params.portfolioState,
     availableCapitalUsd,
     deployedCapitalUsd: grossExposureUsd,
     grossExposureUsd,
     netExposureUsd: grossExposureUsd,
-    realizedPnlUsd: params.vaultState.realizedPnlUsd + realizedPnlUsd,
+    realizedPnlUsd: params.portfolioState.realizedPnlUsd + realizedPnlUsd,
     unrealizedPnlUsd,
   };
 
   const performance = buildPerformanceSnapshot({
-    vaultState: nextVaultState,
+    portfolioState: nextPortfolioState,
     positions,
   });
 

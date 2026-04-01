@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "users": {
+    "3hAGMExm88UpaiFJ4ymYDVQP78T8wnqx6wcArryTMRir": {
+      "wallet": "3hAGMExm88UpaiFJ4ymYDVQP78T8wnqx6wcArryTMRir",
+      "shares": 91.235294117,
+      "totalDeposited": 105,
+      "totalWithdrawn": 2,
+      "createdAt": "2026-03-21T19:03:17.524Z",
+      "updatedAt": "2026-03-21T20:42:52.674Z"
+    }
+  },
+  "totals": {
+    "totalShares": 91.235294117,
+    "totalDeposited": 105,
+    "totalWithdrawn": 2,
+    "updatedAt": "2026-03-21T20:42:52.674Z"
+  }
+}

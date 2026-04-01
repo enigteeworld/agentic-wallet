@@ -1,0 +1,20 @@
+{
+  "name": "Corsair Arbitrum Agent",
+  "description": "Agentic wallet and Arbitrum workflow for reading chain state, balances, and executing actions.",
+  "image": "https://placehold.co/512x512/png",
+  "external_url": "https://github.com/enigteeworld/agentic-wallet",
+  "attributes": [
+    {
+      "trait_type": "network",
+      "value": "Arbitrum Sepolia"
+    },
+    {
+      "trait_type": "agent",
+      "value": "Corsair"
+    },
+    {
+      "trait_type": "capability",
+      "value": "read-module"
+    }
+  ]
+}

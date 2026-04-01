@@ -11,7 +11,7 @@ import { VoltrClient } from "@voltr/vault-sdk";
 import type {
   ExecutionResult,
   PerformanceSnapshot,
-  VaultState,
+  PortfolioState,
 } from "../strategy/types";
 import type { VaultAdapter, VaultIdentity } from "./interfaces";
 
@@ -214,19 +214,23 @@ export class RangerVaultAdapter implements VaultAdapter {
           ? raw.source
           : this.source,
       rangerVaultPubkey:
-        typeof raw.rangerVaultPubkey === "string" && raw.rangerVaultPubkey.trim().length > 0
+        typeof raw.rangerVaultPubkey === "string" &&
+        raw.rangerVaultPubkey.trim().length > 0
           ? raw.rangerVaultPubkey
           : this.params.rangerVaultPubkey,
       managerAuthority:
-        typeof raw.managerAuthority === "string" && raw.managerAuthority.trim().length > 0
+        typeof raw.managerAuthority === "string" &&
+        raw.managerAuthority.trim().length > 0
           ? raw.managerAuthority
           : this.params.managerAuthority,
       adminAuthority:
-        typeof raw.adminAuthority === "string" && raw.adminAuthority.trim().length > 0
+        typeof raw.adminAuthority === "string" &&
+        raw.adminAuthority.trim().length > 0
           ? raw.adminAuthority
           : this.params.adminAuthority,
       baseAssetMint:
-        typeof raw.baseAssetMint === "string" && raw.baseAssetMint.trim().length > 0
+        typeof raw.baseAssetMint === "string" &&
+        raw.baseAssetMint.trim().length > 0
           ? raw.baseAssetMint
           : this.params.baseAssetMint,
       listed:
@@ -266,7 +270,7 @@ export class RangerVaultAdapter implements VaultAdapter {
         baseMintPk,
         vaultAssetIdleAuth,
         true,
-        TOKEN_PROGRAM_ID,
+        TOKEN_PROGRAM_ID
       );
 
       const [account, mintInfo] = await Promise.all([
@@ -316,7 +320,7 @@ export class RangerVaultAdapter implements VaultAdapter {
     };
   }
 
-  async getVaultState(): Promise<VaultState> {
+  async getVaultState(): Promise<PortfolioState> {
     const snapshot = this.loadSnapshot();
     const performance = readJsonFile<PerformanceSnapshot | null>(
       performancePath(this.agentId),
@@ -337,7 +341,10 @@ export class RangerVaultAdapter implements VaultAdapter {
     const availableCapitalUsd =
       rangerBaseBalanceUsd ??
       snapshot.availableCapitalUsd ??
-      Math.max(0, (performance?.navUsd ?? snapshot.totalValueUsd ?? 0) - grossExposureUsd);
+      Math.max(
+        0,
+        (performance?.navUsd ?? snapshot.totalValueUsd ?? 0) - grossExposureUsd
+      );
 
     const totalValueUsd =
       this.source === "ranger"
@@ -376,7 +383,7 @@ export class RangerVaultAdapter implements VaultAdapter {
     this.saveSnapshot(nextSnapshot);
 
     return {
-      vaultId: nextSnapshot.vaultId,
+      portfolioId: nextSnapshot.vaultId,
       totalValueUsd: nextSnapshot.totalValueUsd,
       availableCapitalUsd: nextSnapshot.availableCapitalUsd,
       reservedCapitalUsd: nextSnapshot.reservedCapitalUsd,
@@ -424,8 +431,8 @@ export class RangerVaultAdapter implements VaultAdapter {
 
     const totalValueUsd =
       this.source === "ranger"
-        ? (await this.tryLoadRangerBaseBalanceUsd() ?? snapshot.availableCapitalUsd) +
-          grossExposureUsd
+        ? ((await this.tryLoadRangerBaseBalanceUsd()) ??
+            snapshot.availableCapitalUsd) + grossExposureUsd
         : snapshot.totalValueUsd > 0
           ? snapshot.totalValueUsd
           : snapshot.availableCapitalUsd + grossExposureUsd;
@@ -494,9 +501,7 @@ export class RangerVaultAdapter implements VaultAdapter {
     const cashPct = navUsd > 0 ? effectiveAvailableCapitalUsd / navUsd : 1;
 
     const cumulativeReturnPct =
-      highWaterMarkUsd > 0
-        ? (navUsd - highWaterMarkUsd) / highWaterMarkUsd
-        : 0;
+      highWaterMarkUsd > 0 ? (navUsd - highWaterMarkUsd) / highWaterMarkUsd : 0;
 
     return {
       navUsd,
