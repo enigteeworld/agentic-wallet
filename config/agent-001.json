@@ -1,7 +1,7 @@
 {
   "agentId": "agent-001",
   "version": "0.1.0",
-  "mode": "safe",
+  "mode": "live",
   "persona": {
     "publicName": "Corsair Agent",
     "xHandle": "@corsair_agent"
@@ -28,7 +28,7 @@
     "solPerTrade": 0.02,
     "slippageBps": 50,
     "cluster": "mainnet-beta",
-    "execute": false
+    "execute": true
   },
   "xDrafts": {
     "enabled": true,
@@ -50,40 +50,40 @@
     "listed": false
   },
   "managedStrategy": {
-  "enabled": true,
-  "strategyId": "carv-1",
-  "mode": "managed",
-  "baseAsset": "USDC",
-  "depositAsset": "USDC",
-  "depositPolicy": {
-    "sourceWalletRequired": true,
-    "withdrawToSourceWalletOnly": true,
-    "manualDepositConfirmation": true
-  },
-  "withdrawalPolicy": {
-    "allowPartialWithdrawals": true,
-    "queueIfInsufficientLiquidity": true,
-    "manualExecution": true
-  },
-  "accounting": {
-    "shareDecimals": 9,
-    "initialSharePrice": 1
-  },
-  "execution": {
     "enabled": true,
-    "mode": "simulated",
-    "route": "jupiter",
-    "allowBuy": true,
-    "allowSell": true,
-    "maxLiveNotionalUsd": 5,
-    "minLiveNotionalUsd": 1,
-    "reconcileAfterTrade": true,
-    "maxPriceDeviationPct": 0.01,
-    "maxConsecutiveLosses": 3,
-    "maxCumulativeRealizedLossUsd": 15,
-    "emergencyStop": false
-  }
-},
+    "strategyId": "carv-1",
+    "mode": "managed",
+    "baseAsset": "USDC",
+    "depositAsset": "USDC",
+    "depositPolicy": {
+      "sourceWalletRequired": true,
+      "withdrawToSourceWalletOnly": true,
+      "manualDepositConfirmation": true
+    },
+    "withdrawalPolicy": {
+      "allowPartialWithdrawals": true,
+      "queueIfInsufficientLiquidity": true,
+      "manualExecution": true
+    },
+    "accounting": {
+      "shareDecimals": 9,
+      "initialSharePrice": 1
+    },
+    "execution": {
+      "enabled": true,
+      "mode": "live",
+      "route": "jupiter",
+      "allowBuy": true,
+      "allowSell": true,
+      "maxLiveNotionalUsd": 5,
+      "minLiveNotionalUsd": 1,
+      "reconcileAfterTrade": true,
+      "maxPriceDeviationPct": 0.01,
+      "maxConsecutiveLosses": 3,
+      "maxCumulativeRealizedLossUsd": 15,
+      "emergencyStop": false
+    }
+  },
   "strategy": {
     "mode": "managed",
     "strategyId": "carv-1",

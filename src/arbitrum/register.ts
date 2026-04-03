@@ -17,7 +17,7 @@ const registryAbi = [
     name: "register",
     stateMutability: "nonpayable",
     inputs: [
-      { name: "agent", type: "address" },
+      
       { name: "metadataURI", type: "string" },
     ],
     outputs: [],
@@ -46,8 +46,7 @@ async function main() {
     abi: registryAbi,
     functionName: "register",
     args: [
-      account.address,
-      "https://github.com/enigteeworld/agentic-wallet/blob/feat/ranger-vault-frontend-prep/metadata.json",
+      "https://raw.githubusercontent.com/enigteeworld/agentic-wallet/feat/ranger-vault-frontend-prep/metadata.json",
     ],
   });
 

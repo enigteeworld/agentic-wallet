@@ -1,6 +1,6 @@
 Corsair Agent is online.
 
-Mode: safe
+Mode: live
 Version: 0.1.0
 
 Autonomous checks have started.
